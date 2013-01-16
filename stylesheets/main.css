@@ -1,0 +1,32 @@
+body {
+  font-family: Verdana, Helvetica, sans-serif;
+  background-color: #DDDDDD;
+}
+
+table {
+  border-collapse: collapse;
+  border: 1px solid gray;
+}
+
+td {
+  border-collapse: collapse;
+  border: 1px solid gray;
+  width: 2em;
+  height: 2em;
+  text-align: center
+}
+
+#grid { 
+position: absolute;
+top: 10;
+bottom: 10;
+left: 10;
+}
+
+#answers { 
+position: absolute; 
+top: 10; 
+right: 10; 
+bottom: 10; 
+left: 13em; 
+}
