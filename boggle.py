@@ -169,6 +169,13 @@ class Dictionary:
                 # PERF: slow! O(m*n) for word len m, n words
                 self._add(line)
 
+    def __contains__(self, word):
+        node = self.find(word)
+        if node != None:
+            return node.isword
+        else:
+            return False
+
     def _add(self, word):
         node = self.root
         for letter in word[0:-1]:

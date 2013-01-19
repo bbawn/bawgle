@@ -1,6 +1,5 @@
 body {
   font-family: Verdana, Helvetica, sans-serif;
-  background-color: #DDDDDD;
 }
 
 table {
@@ -11,22 +10,49 @@ table {
 td {
   border-collapse: collapse;
   border: 1px solid gray;
-  width: 2em;
-  height: 2em;
+  width: 3em;
+  height: 3em;
   text-align: center
 }
 
 #grid { 
-position: absolute;
-top: 10;
-bottom: 10;
-left: 10;
+  float: left;
+  width: 18em;
 }
 
-#answers { 
-position: absolute; 
-top: 10; 
-right: 10; 
-bottom: 10; 
-left: 13em; 
+#grid ul {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+#grid li {
+  display: inline-block;
+}
+
+#col0 { 
+  float: left;
+  width: 12em;
+  word-wrap: break-word
+}
+
+#col1 { 
+  float: left;
+  width: 12em;
+  word-wrap: break-word
+  background-color: #DDDD00;
+}
+
+#col2 { 
+  float: left;
+  width: 12em;
+  word-wrap: break-word
+  background-color: #DD00DD;
+}
+
+#col3 { 
+  float: left;
+  width: 12em;
+  word-wrap: break-word
+  background-color: #00DDDD;
 }
