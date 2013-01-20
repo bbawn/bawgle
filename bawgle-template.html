@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    <title>Bawgle</title>
+  </head>
+  <body>
+    <div id="grid">
+      <ul>
+      <li>
+      <form action="" method="get">
+        <input type="submit" value="Shake">
+      </form>
+      </li>
+      <li>
+      <form name="play" action="" method="get">
+        <input name="letters" type="hidden" value="{{ letters }}">
+        <input type="submit" value="Solve">
+        <input name="solve" type="hidden" value="1">
+      </li>
+      </ul>
+      <table>
+      {% for i in range(rank*rank) %}
+        {% if i % rank  == 0 %}
+        <tr>
+        {% endif %}
+          <td>{{ display_letters[i] }}</td>
+        {% if i + 1 % rank  == 0 %}
+        </tr>
+        {% endif %}
+      {% endfor %}
+      </table>
+    </div>
+    </div>
+    <div id="col0">
+    {% if solve %}
+      YOUR WORDS ({{ words|length }}):
+      {% for w in words|dictsort %}
+        {% if w[1] %}
+      <br>{{ w[0] }}
+        {% else %}
+      <br><del>{{ w[0]|e }}</del>
+        {% endif %}
+      {% endfor %}
+      </form>
+      <p>SCORE: {{ word_score }}</p>
+    {% else %}
+      YOUR WORDS:
+          <textarea name="words" cols=24 rows=40></textarea name>
+        </form>
+    {% endif %}
+    </div>
+    <div id="col1">
+    {% if solve %}
+      ANSWERS ({{ answers|length }}):
+      {% set col, line = 2, 0 %}
+      {% for a in answers|dictsort %}
+        {% if line % lines_per_col == lines_per_col - 1 %}
+    </div>
+    <div id="col{{ col }}">
+          {% set col = col + 1 %}
+          {% set line = line + 1 %}
+        {% endif %}
+        <br>{{ a[0] }}
+        {% if a[1] > 1 %}
+          ({{a[1]}})
+        {% endif %}
+        {% set line = line + 1 %}
+      {% endfor %}
+        <p>SCORE: {{ answer_score }} </p>
+    {% endif %}
+    </div>
+  </body>
+</html>
+
