@@ -47,11 +47,11 @@ class Game:
     """ A round of Boggle."""
 
     # Each cube has 6 faces, each with a letter
-    cubes = ['eeeeam', 'oooutt', 'setcpi', 'asairf', 'yrrphi',
-             'hhldro', 'cpilet', 'eeumga', 'eeeeaa', 'hrlond', 
-             'sssune', 'thhodn', 'afirys', 'menang', 'fiyspr',
-             'deannn', 'rrvgwo', 'sctncw', 'ddornl', 'faaars',
-             'ciietl', 'tttoem', 'iiiett', 'touown', 'kzxqbj']
+    cubes = [u'eeeeam', u'oooutt', u'setcpi', u'asairf', u'yrrphi',
+             u'hhldro', u'cpilet', u'eeumga', u'eeeeaa', u'hrlond', 
+             u'sssune', u'thhodn', u'afirys', u'menang', u'fiyspr',
+             u'deannn', u'rrvgwo', u'sctncw', u'ddornl', u'faaars',
+             u'ciietl', u'tttoem', u'iiiett', u'touown', u'kzxqbj']
 
     def __init__(self, dictionary):
         self.letters = None
@@ -74,9 +74,9 @@ class Game:
         self.letters = list(letters)
 
     def dump(self, stream=sys.stdout):
-        stream.write("GAME:\n")
+        stream.write(u"GAME:\n")
         for row in range(rank):
-            stream.write(str(self.letters[row*rank:(row+1)*rank]) + '\n')
+            stream.write(unicode(self.letters[row*rank:(row+1)*rank]) + u'\n')
 
     def solve(self):
         """ Return return dictionary (key: word, value: count) of all
@@ -95,8 +95,8 @@ class Game:
         at index to solution set
         """
         self.used_indexes.append(index)
-        if prefix[-1] == 'q':               # q is really qu
-            prefix += 'u'
+        if prefix[-1] == u'q':               # q is really qu
+            prefix += u'u'
         node = self.dictionary.find(prefix)
         if node == None:
             self.used_indexes.pop()
@@ -140,16 +140,16 @@ class Node:
         return node
 
     def dump(self, stream=sys.stdout, indent=0):
-        line = ' '*indent
+        line = u' '*indent
         if self.isword:
-            line += '*'
+            line += u'*'
         else:
-            line += ' '
+            line += u' '
 
-        line += self.letter + ": "
+        line += self.letter + u": "
         for k in self.kids:
             line += k.letter 
-        stream.write(line + '\n')
+        stream.write(line + u'\n')
         indent += 1
         for k in self.kids:
             k.dump(stream, indent)
@@ -157,10 +157,10 @@ class Node:
 class Dictionary:
     """ Collection of words that allows prefix lookup."""
 
-    def __init__(self, file='/usr/share/dict/words'):
+    def __init__(self, file=u'/usr/share/dict/words'):
         self.root = Node('', False)
-        prog = re.compile("[^a-z]")
-        with open(file, 'r') as f:
+        prog = re.compile(u"[^a-z]")
+        with open(file, u'r') as f:
             for line in f:
                 line = line.rstrip()
                 # Skip words with non-letters
@@ -201,6 +201,8 @@ def score(answers):
     total = 0
     for word in answers.keys():
         l = len(word)
+        if answers[word] == 0:  # invalid ("crossed-out") word
+            continue
         if l >= len(score_for_len):
             total += score_for_len[-1]
         else:
@@ -216,8 +218,8 @@ if __name__ == "__main__":
             game.shake()
         game.dump(sys.stdout)
         answers = game.solve()
-        print('\nSCORE: ' + str(score(answers)))
-        print('\nSOLUTION:')
+        print(u'\nSCORE: ' + unicode(score(answers)))
+        print(u'\nSOLUTION:')
         pprint.pprint(answers)
 
     main()

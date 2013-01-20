@@ -37,9 +37,9 @@
       YOUR WORDS ({{ words|length }}):
       {% for w in words|dictsort %}
         {% if w[1] %}
-      <br>{{ w[0] }}
+      <br>{{ w[0]|word_anchor }}
         {% else %}
-      <br><del>{{ w[0]|e }}</del>
+      <br><del>{{ w[0]|word_anchor(True) }}</del>
         {% endif %}
       {% endfor %}
       </form>
@@ -61,7 +61,7 @@
           {% set col = col + 1 %}
           {% set line = line + 1 %}
         {% endif %}
-        <br>{{ a[0] }}
+        <br>{{ a[0]|word_anchor }}
         {% if a[1] > 1 %}
           ({{a[1]}})
         {% endif %}

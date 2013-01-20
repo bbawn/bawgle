@@ -1,3 +1,4 @@
+# Play boggle on www
 import boggle
 import cgi
 import datetime
@@ -12,138 +13,73 @@ import webapp2
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
-dictionary = boggle.Dictionary('./words')
+dictionary = boggle.Dictionary(u'./words')
 game = boggle.Game(dictionary)
 
 def cross_out(answers, user_words):
     # Return dictionary of user_words. Value 0 if the
-    # word appears in answers or is not in dictionary
+    # word is too short or is not an answer
     words = {}
     for u in user_words:
         u = string.lower(u)
-        # Go ahead and count words that are in answers or else human
-        # always scores 0!
-        # if u not in answers and u in dictionary:
-        if u in dictionary and len(u) > 3:
+        if u in answers and len(u) > 3:
             words[u] = 1
         else:
             words[u] = 0
-    sys.stderr.write('words:' + str(words) + '\n')
     return words
+
+word_anchor_base = u'http://wiktionary.org/wiki/'
+def word_anchor_filter(word, delete=False):
+    # Show solution words as link to web dictionary for lookup
+    if delete:
+        return u'<a href="' + word_anchor_base + word + u'"><del>' + word + '</del></a>'
+    else:
+        return u'<a href="' + word_anchor_base + word + u'">' + word + '</a>'
+
+jinja_environment.filters['word_anchor'] = word_anchor_filter
+
+def display_letters(letters):
+    # Return list of letters in display format
+    ret = []
+    for l in letters:
+        if l == u'q':
+            l = u'qu'
+        ret.append(string.upper(l))
+    return ret
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
-        letters = self.request.get('letters')
-        words = {}
+        letters = self.request.get(u'letters')
         if len(letters) > 0:
             game.set(letters)
         else:
             game.shake()
-        if self.request.get('solve'):
+        if self.request.get(u'solve'):
             answers = game.solve()
-            user_words = self.request.get('words').split()
+            answer_score = boggle.score(answers)
+            user_words = self.request.get(u'words').split()
             words = cross_out(answers, user_words)
+            lines_per_col = max(25, (len(answers)+7)/3)
         else:
             answers = None
+            answer_score = None
+            lines_per_col = None
+            words = {}
 
-        self.render(answers, words)
-        
         template_values = {
-            'rank': boggle.rank,
-            'letters': game.letters,
-            'answers': answers
+            u'rank': boggle.rank,
+            u'solve': self.request.get(u'solve'),
+            u'letters': string.join(game.letters, u''),
+            u'display_letters': display_letters(game.letters),
+            u'answers': answers,
+            u'answer_score': answer_score,
+            u'words': words,
+            u'word_score': boggle.score(words),
+            u'lines_per_col' : lines_per_col
         }
 
-        # template = jinja_environment.get_template('index.html')
-        # self.response.out.write(template.render(template_values))
+        template = jinja_environment.get_template(u'bawgle-template.html')
+        self.response.out.write(template.render(template_values))
 
-    def render(self, answers, words):
-        self.response.headers['Content-Type'] = 'text/html'
-        out = self.response.out
-        out.write('''
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-                <title>Bawgle</title>
-              </head>
-              <body>
-                <div id="grid">
-                  <ul>
-                  <li>
-                  <form action="" method="get">
-                    <input type="submit" value="Shake">
-                  </form>
-                  </li>
-                  <li>
-                  <form name="play" action="" method="get">
-                    <input name="letters" type="hidden" value="''')
-        out.write(string.join(game.letters, ''))
-        out.write('''">
-                    <input type="submit" value="Solve">
-                    <input name="solve" type="hidden" value="1">
-                  </li>
-                  </ul>
-                <table>''')
-        for i in range(len(game.letters)):
-            let = game.letters[i]
-            if let == 'q':
-                let += 'u'
-            if i % boggle.rank == 0:
-                out.write("""
-                  <tr>""")
-            out.write("""
-                    <td>""" + string.upper(let) + "</td>")
-            if i % boggle.rank == boggle.rank - 1:
-                out.write("""
-                  </tr>""")
-
-        col = 0
-        out.write("""
-                </table>
-                </div>
-                <div id="col0">""")
-        if answers != None:
-            out.write("YOUR WORDS (" + str(len(words)) + "):")
-            for w in sorted(words):
-                if words[w] == 0:
-                    out.write('<br><del>' + w + '</del>')
-                else:
-                    out.write("<br>" + w)
-            word_score = boggle.score(words)
-            out.write("""
-                <p>SCORE: """ + str(word_score) + " </p>\n")
-        else:
-            out.write("""
-                YOUR WORDS:
-                    <textarea name="words" cols=24 rows=40></textarea name>
-                  </form>""")
-        
-        # answers = {str(1000+j):1 for j in range(75)}
-        out.write("""
-                </div>
-                <div id="col1">""")
-        if answers != None:
-            out.write("ANSWERS (" + str(len(answers)) + "):")
-            lines_per_col = max(25, (len(answers)+7)/3)
-            i = 0
-            col = 2
-            for a in sorted(answers):
-                if i % lines_per_col == lines_per_col - 1:
-                    out.write('</div><div id="col''' + str(col) + '">')
-                    col += 1
-                    i += 1
-                out.write("<br>" + a)
-                if answers[a] > 1:
-                    out.write(' (' + str(answers[a]) + ')')
-                i += 1
-            answer_score = boggle.score(answers)
-            out.write("""
-                <p>SCORE: """ + str(answer_score) + " </p>\n")
-        out.write("""
-                </div>
-              </body>
-            </html>""")
-
-app = webapp2.WSGIApplication([('/', MainPage)],
+app = webapp2.WSGIApplication([(u'/', MainPage)],
                               debug=True)
