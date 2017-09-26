@@ -3,22 +3,31 @@
   <head>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="stylesheets/main.css" />
+    <script src="scripts/bawgle-client.js"></script>
     <title>Bawgle</title>
   </head>
   <body>
     <section class="bawgle">
       <div id="control">
         <form action="" method="get">
-          <input class="topitem" id="new" type="submit" value="Shake">
+          <input class="topitem" id="new" type="submit" value="New">
         </form>
-        <button class="topitem" id="play" type="button">
-          <span class="material-icons md-18">play_arrow</span>
+      {% if solve %}
+        <button class="topitem" id="playing" disabled>
+      {% else %}
+        <button class="topitem" id="playing" onclick="togglePlay()">
+      {% endif %}
+          <span class="material-icons md-18" id="playing-icon" >play_arrow</span>
         </button>
-        <form name="play" action="" method="get">
+        <form id="play-form" name="play" action="" method="get">
           <input name="letters" type="hidden" value="{{ letters }}">
-          <input class="topitem" type="submit" value="Solve">
+      {% if solve %}
+          <input class="topitem" id="solve" type="submit" value="Solve" disabled>
+      {% else %}
+          <input class="topitem" id="solve" type="submit" value="Solve">
+      {% endif %}
           <input name="solve" type="hidden" value="1">
-          <button class="topitem" id="help" type="button">
+          <button class="topitem" id="help">
             <span class="material-icons md-18">help_outline</span>
           </button>
       {% if solve %}
@@ -28,7 +37,7 @@
       <div id="left-panel">
         <h2 class="panel-label">Your words ({{ words|length }}):</h2>
         <div class="word-panel">
-          <ul class="wordlist">
+          <ul class="word-list">
         {% for w in words|dictsort %}
           {% if w[1] %}
             <li>{{ w[0]|word_anchor }}</li>
@@ -44,13 +53,18 @@
       <div id="left-panel">
         <h2 class="panel-label">Your words:</h2>
         <div class="word-panel">
-          <textarea name="words" cols=24 rows=40></textarea name>
+          <textarea id="words" name="words" cols=24 rows=40>
+          </textarea name>
         </form>
         </div>
       {% endif %}
       </div>
       <div id="center-panel">
-        <h2 id="clock" class="panel-label">3:00</h2>
+      {% if solve %}
+        <h2 id="status" class="panel-label">Your score: {{word_score}} out of {{answer_score}}</h2>
+      {% else %}
+        <h2 id="status" class="panel-label"></h2>
+      {% endif %}
         <div id="grid">
       {% for i in range(rank*rank) %}
         {% if i % rank == 0 %}
@@ -67,7 +81,7 @@
       {% if solve %}
         <h2 class="panel-label">Solution ({{ answers|length }}):</h2>
         <div class="word-panel">
-          <ul class="wordlist">
+          <ul class="word-list">
         {% for a in answers|dictsort %}
           {% if a[1] > 1 %}
               <li>{{ a[0]|word_anchor }} ({{a[1]}})</li>

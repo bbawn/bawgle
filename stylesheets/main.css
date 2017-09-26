@@ -19,17 +19,23 @@ body {
   float: left;
   display: block;
   text-align: center;
-  padding: 8px 10px;
+  padding: 9px 10px;
   text-decoration: none;
   border-width: 0;
   background: rgba(0, 0, 0, 0.0);
   font-size: 18px;
   color: white;
+  line-height: 1.5em;
 }
 
-#help, #play {
-  padding-bottom: 1px; /* XXX don't understand... */
+#help, #playing {
+  padding-bottom: 4px; /* XXX don't understand... */
 }
+
+#playing:disabled, #solve:disabled {
+  color: #80a0a0;
+}
+
 
 .topitem:hover, .topitem:focus {
   background: #68c88c;
@@ -80,17 +86,43 @@ body {
   padding-right: 2.5rem;
 }
 
-#clock {
+#status {
   text-align: center;
 }
 
-.wordlist {
+.word-list {
   margin: 0;
   padding-left: 2.5em;
 }
 
-.wordlist li {
+.word-list li {
   list-style-type: none;
+}
+
+.word-list a {
+  outline: none;
+  text-decoration: none;
+}
+
+.word-list a:link {
+  color: black;
+}
+
+.word-list a:visited {
+}
+
+.word-list a:focus {
+  color: #019795;
+  text-decoration: underline;
+}
+
+.word-list a:hover {
+  color: #019795;
+  text-decoration: underline;
+}
+
+.word-list a:active {
+  color: #01FEAA;
 }
 
 #grid {
