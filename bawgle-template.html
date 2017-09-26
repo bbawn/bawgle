@@ -1,75 +1,85 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="stylesheets/main.css" />
     <title>Bawgle</title>
   </head>
   <body>
-    <div id="grid">
-      <ul>
-      <li>
-      <form action="" method="get">
-        <input type="submit" value="Shake">
-      </form>
-      </li>
-      <li>
-      <form name="play" action="" method="get">
-        <input name="letters" type="hidden" value="{{ letters }}">
-        <input type="submit" value="Solve">
-        <input name="solve" type="hidden" value="1">
-      </li>
-      </ul>
-      <table>
-      {% for i in range(rank*rank) %}
-        {% if i % rank  == 0 %}
-        <tr>
-        {% endif %}
-          <td>{{ display_letters[i] }}</td>
-        {% if i + 1 % rank  == 0 %}
-        </tr>
-        {% endif %}
-      {% endfor %}
-      </table>
-    </div>
-    </div>
-    <div id="col0">
-    {% if solve %}
-      YOUR WORDS ({{ words|length }}):
-      {% for w in words|dictsort %}
-        {% if w[1] %}
-      <br>{{ w[0]|word_anchor }}
-        {% else %}
-      <br><del>{{ w[0]|word_anchor(True) }}</del>
-        {% endif %}
-      {% endfor %}
-      </form>
-      <p>SCORE: {{ word_score }}</p>
-    {% else %}
-      YOUR WORDS:
+    <section class="bawgle">
+      <div id="control">
+        <form action="" method="get">
+          <input class="topitem" id="new" type="submit" value="Shake">
+        </form>
+        <button class="topitem" id="play" type="button">
+          <span class="material-icons md-18">play_arrow</span>
+        </button>
+        <form name="play" action="" method="get">
+          <input name="letters" type="hidden" value="{{ letters }}">
+          <input class="topitem" type="submit" value="Solve">
+          <input name="solve" type="hidden" value="1">
+          <button class="topitem" id="help" type="button">
+            <span class="material-icons md-18">help_outline</span>
+          </button>
+      {% if solve %}
+        </form>
+      </div>
+      <div id=#main>
+      <div id="left-panel">
+        <h2 class="panel-label">Your words ({{ words|length }}):</h2>
+        <div class="word-panel">
+          <ul class="wordlist">
+        {% for w in words|dictsort %}
+          {% if w[1] %}
+            <li>{{ w[0]|word_anchor }}</li>
+          {% else %}
+            <li><del>{{ w[0]|word_anchor(True) }}</del></li>
+          {% endif %}
+        {% endfor %}
+          </ul>
+        </div>
+      {% else %}
+      </div>
+      <div id=#main>
+      <div id="left-panel">
+        <h2 class="panel-label">Your words:</h2>
+        <div class="word-panel">
           <textarea name="words" cols=24 rows=40></textarea name>
         </form>
-    {% endif %}
-    </div>
-    <div id="col1">
-    {% if solve %}
-      ANSWERS ({{ answers|length }}):
-      {% set col, line = 2, 0 %}
-      {% for a in answers|dictsort %}
-        {% if line % lines_per_col == lines_per_col - 1 %}
-    </div>
-    <div id="col{{ col }}">
-          {% set col = col + 1 %}
-          {% set line = line + 1 %}
+        </div>
+      {% endif %}
+      </div>
+      <div id="center-panel">
+        <h2 id="clock" class="panel-label">3:00</h2>
+        <div id="grid">
+      {% for i in range(rank*rank) %}
+        {% if i % rank == 0 %}
+          <div class="grid-row" id="r{{i * rank}}">
         {% endif %}
-        <br>{{ a[0]|word_anchor }}
-        {% if a[1] > 1 %}
-          ({{a[1]}})
+            <div class="grid-cel">{{ display_letters[i] }}</div>
+        {% if i % rank == 0 %}
+          </div>
         {% endif %}
-        {% set line = line + 1 %}
       {% endfor %}
-        <p>SCORE: {{ answer_score }} </p>
-    {% endif %}
-    </div>
+        </div>
+      </div>
+      <div id="right-panel">
+      {% if solve %}
+        <h2 class="panel-label">Solution ({{ answers|length }}):</h2>
+        <div class="word-panel">
+          <ul class="wordlist">
+        {% for a in answers|dictsort %}
+          {% if a[1] > 1 %}
+              <li>{{ a[0]|word_anchor }} ({{a[1]}})</li>
+          {% else %}
+              <li>{{ a[0]|word_anchor }}</li>
+          {% endif %}
+        {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+      </div>
+    </section>
   </body>
 </html>
 

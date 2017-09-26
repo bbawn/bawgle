@@ -1,58 +1,122 @@
+html {
+  font-family: Roboto, RobotoDraft, Helvetica, sans-serif;
+  font-size: 14px;
+}
+
 body {
-  font-family: Verdana, Helvetica, sans-serif;
-}
-
-table {
-  border-collapse: collapse;
-  border: 1px solid gray;
-}
-
-td {
-  border-collapse: collapse;
-  border: 1px solid gray;
-  width: 3em;
-  height: 3em;
-  text-align: center
-}
-
-#grid { 
-  float: left;
-  width: 18em;
-}
-
-#grid ul {
-  padding: 0;
   margin: 0;
+  height: 100%;
+  overflow: scroll;
+}
+
+#control {
+  overflow: hidden;
+  background: #016765;
+  color: white;
+}
+
+.topitem {
+  float: left;
+  display: block;
+  text-align: center;
+  padding: 8px 10px;
+  text-decoration: none;
+  border-width: 0;
+  background: rgba(0, 0, 0, 0.0);
+  font-size: 18px;
+  color: white;
+}
+
+#help, #play {
+  padding-bottom: 1px; /* XXX don't understand... */
+}
+
+.topitem:hover, .topitem:focus {
+  background: #68c88c;
+  color: #014725;
+}
+
+#score {
+  float: left, right;
+}
+
+#help, #grid-size, #language {
+  float: right;
+}
+
+#main {
+  min-width: 99em;
+}
+  
+#left-panel {
+  position: absolute;
+  top: 3.6em;
+  left: 0;
+  width: 33em;
+} 
+
+#center-panel {
+  position: absolute;
+  top: 3.6em;
+  left: 33em;
+  width: 33em;
+} 
+
+#right-panel {
+  position: absolute;
+  top: 3.6em;
+  left: 66em;
+  width: 33em;
+} 
+
+.word-panel {
+  column-count: 2;
+  /* column-fill: auto; */
+  /* height: 34em; */
+}
+
+.panel-label {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+}
+
+#clock {
+  text-align: center;
+}
+
+.wordlist {
+  margin: 0;
+  padding-left: 2.5em;
+}
+
+.wordlist li {
   list-style-type: none;
 }
 
-#grid li {
-  display: inline-block;
+#grid {
+  font-size: 2em;
+  padding-left: 1rem;
 }
 
-#col0 { 
+.grid-cel {
   float: left;
-  width: 12em;
-  word-wrap: break-word
+  font-family: "Times New Roman", Times, serif;
+  font-weight: bold;
+  text-align: center;
+  float: left;
+  line-height: 2.5em;
+  width: 2.5em; 
+  margin: 3px;
+  border: 5px solid #016765;
+  border-collapse: collapse;
+  border-radius: 5px;
 }
 
-#col1 { 
-  float: left;
-  width: 12em;
-  word-wrap: break-word
-  background-color: #DDDD00;
+.grid-cel:hover, .grid-cel:focus {
+  color: #68c88c;
+  background: #014725;
 }
 
-#col2 { 
-  float: left;
-  width: 12em;
-  word-wrap: break-word
-  background-color: #DD00DD;
-}
-
-#col3 { 
-  float: left;
-  width: 12em;
-  word-wrap: break-word
-  background-color: #00DDDD;
+.grid-row {
+  clear: left;
 }
