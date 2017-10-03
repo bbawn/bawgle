@@ -1,3 +1,5 @@
+// Timer management
+
 function secondsToTimeDisplay(sec) {
     m = Math.floor(sec / 60);
     s = sec % 60;
@@ -20,6 +22,7 @@ var updateClock = function(ms) {
 
 var intervalCallback = function() {
     var now = Date.now();
+
     runTimeMs += (now - tickMs);
     tickMs = now;
     if (runTimeMs < DURATION_MS) {
@@ -37,16 +40,44 @@ function togglePlay() {
     }
     if (!paused) {
         tickMs = Date.now();
-        document.getElementById("words").disabled = false;
+        document.getElementById("word-entry").disabled = false;
         document.getElementById("playing-icon").innerHTML = "pause";
         intervalTimer = setInterval(intervalCallback, 1000);
         paused = true;
     } else {
-        document.getElementById("words").disabled = true;
+        document.getElementById("word-entry").disabled = true;
         document.getElementById("playing-icon").innerHTML = "play_arrow";
         clearInterval(intervalTimer);
         paused = false;
     }
+}
+
+// Word entry management
+function wordEntryKeypress(event) {
+  if (event.keyCode == 13) {
+    addUserWord(event.target.value);
+    event.target.value = '';
+  }
+}
+
+function addUserWord(word) {
+  var ul = document.getElementById("user-word-list");
+  var li = document.createElement("li");
+
+  li.appendChild(document.createTextNode(word));
+  ul.appendChild(li);
+}
+
+function submitSolve() {
+  var words = '';
+  var ul = document.getElementById("user-word-list");
+
+  for (var i = 0; i < ul.children.length; i++) {
+    var li = ul.children[i];
+    words += li.childNodes[0].textContent + ' ';
+  }
+  var input = document.getElementById("words");
+  input.value = words;
 }
     
 document.addEventListener("DOMContentLoaded", function(event) {
@@ -54,9 +85,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
     /* Initially empty status strings means status should be clock */
     if (document.getElementById("status").innerHTML == "") {
         updateClock(DURATION_MS);
-        var wordsTextArea = document.getElementById("words")
-        if (wordsTextArea) {
-            wordsTextArea.disabled = true;
+        var wordEntry = document.getElementById("word-entry")
+        if (wordEntry) {
+            wordEntry.disabled = true;
         }
     }
 });

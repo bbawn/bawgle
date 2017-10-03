@@ -19,7 +19,8 @@
       {% endif %}
           <span class="material-icons md-18" id="playing-icon" >play_arrow</span>
         </button>
-        <form id="play-form" name="play" action="" method="get">
+        <form id="play-form" name="play" action="" method="get" onsubmit="submitSolve()">
+          <input name="words" id="words" type="hidden" value="">
           <input name="letters" type="hidden" value="{{ letters }}">
       {% if solve %}
           <input class="topitem" id="solve" type="submit" value="Solve" disabled>
@@ -30,14 +31,14 @@
           <button class="topitem" id="help">
             <span class="material-icons md-18">help_outline</span>
           </button>
-      {% if solve %}
         </form>
       </div>
-      <div id=#main>
+      <div id="main">
       <div id="left-panel">
+      {% if solve %}
         <h2 class="panel-label">Your words ({{ words|length }}):</h2>
         <div class="word-panel">
-          <ul class="word-list">
+          <ul id="user-word-list" class="word-list">
         {% for w in words|dictsort %}
           {% if w[1] %}
             <li>{{ w[0]|word_anchor }}</li>
@@ -48,14 +49,11 @@
           </ul>
         </div>
       {% else %}
-      </div>
-      <div id=#main>
-      <div id="left-panel">
         <h2 class="panel-label">Your words:</h2>
+        <div><input id='word-entry' type='text' onkeypress='wordEntryKeypress(event)'></div>
         <div class="word-panel">
-          <textarea id="words" name="words" cols=24 rows=40>
-          </textarea name>
-        </form>
+          <ul id="user-word-list" class="word-list">
+          </ul>
         </div>
       {% endif %}
       </div>

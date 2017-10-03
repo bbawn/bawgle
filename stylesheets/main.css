@@ -77,8 +77,8 @@ body {
 
 .word-panel {
   column-count: 2;
-  /* column-fill: auto; */
-  /* height: 34em; */
+  column-fill: auto;
+  height: 31em;
 }
 
 .panel-label {
