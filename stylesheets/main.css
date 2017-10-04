@@ -125,12 +125,33 @@ body {
   color: #01FEAA;
 }
 
+.word-entry {
+  width: 10em;
+}
+
+.word-entry-delete, .word-entry-delete {
+  height: 24px;
+  vertical-align: middle;
+  border-width: 0;
+  padding: 0;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
 #grid {
   font-size: 2em;
   padding-left: 1rem;
 }
 
-.grid-cel {
+.grid-cell {
   float: left;
   font-family: "Times New Roman", Times, serif;
   font-weight: bold;
@@ -144,9 +165,13 @@ body {
   border-radius: 5px;
 }
 
-.grid-cel:hover, .grid-cel:focus {
+.grid-cell span:hover, .grid-cell span:focus {
   color: #68c88c;
   background: #014725;
+}
+
+.grid-cell[selected] {
+  background: lightGreen;
 }
 
 .grid-row {

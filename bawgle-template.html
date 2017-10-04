@@ -50,9 +50,11 @@
         </div>
       {% else %}
         <h2 class="panel-label">Your words:</h2>
-        <div><input id='word-entry' type='text' onkeypress='wordEntryKeypress(event)'></div>
         <div class="word-panel">
           <ul id="user-word-list" class="word-list">
+            <li>
+              <input id='word-entry-top' class='word-entry' type='text' onkeypress='wordEntryKeypress(event)' value="">
+            </li>
           </ul>
         </div>
       {% endif %}
@@ -63,12 +65,12 @@
       {% else %}
         <h2 id="status" class="panel-label"></h2>
       {% endif %}
-        <div id="grid">
+        <div id="grid" class="noselect">
       {% for i in range(rank*rank) %}
         {% if i % rank == 0 %}
           <div class="grid-row" id="r{{i * rank}}">
         {% endif %}
-            <div class="grid-cel">{{ display_letters[i] }}</div>
+            <div class="grid-cell"><span onmousedown='gridCellDown(event)' onmouseenter='gridCellEnter(event)'>{{ display_letters[i] }}</span></div>
         {% if i % rank == 0 %}
           </div>
         {% endif %}

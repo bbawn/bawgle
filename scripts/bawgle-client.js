@@ -40,12 +40,12 @@ function togglePlay() {
     }
     if (!paused) {
         tickMs = Date.now();
-        document.getElementById("word-entry").disabled = false;
+        document.getElementById("word-entry-top").disabled = false;
         document.getElementById("playing-icon").innerHTML = "pause";
         intervalTimer = setInterval(intervalCallback, 1000);
         paused = true;
     } else {
-        document.getElementById("word-entry").disabled = true;
+        document.getElementById("word-entry-top").disabled = true;
         document.getElementById("playing-icon").innerHTML = "play_arrow";
         clearInterval(intervalTimer);
         paused = false;
@@ -55,26 +55,81 @@ function togglePlay() {
 // Word entry management
 function wordEntryKeypress(event) {
   if (event.keyCode == 13) {
-    addUserWord(event.target.value);
-    event.target.value = '';
+    addUserWord();
   }
 }
 
-function addUserWord(word) {
+function addUserWord() {
   var ul = document.getElementById("user-word-list");
   var li = document.createElement("li");
+  var input = document.createElement("input");
+  var wordEntryTop = document.getElementById('word-entry-top');
 
-  li.appendChild(document.createTextNode(word));
+  if (wordEntryTop.value === '') {
+    return;
+  }
+
+  input.value = wordEntryTop.value;
+  wordEntryTop.value = '';
+  input.className = 'word-entry';
+  var delButton = document.createElement('button');
+  delButton.className = 'word-entry-delete';
+  var delSpan = document.createElement('span');
+  delSpan.className ='material-icons md-18';
+  delSpan.textContent='remove_circle';
+
+  delButton.appendChild(delSpan);
+  li.appendChild(input);
+  li.appendChild(delButton);
   ul.appendChild(li);
+
+  // New li goes after top one, simulate insertAfter
+  ul.insertBefore(li, wordEntryTop.parentNode.nextSibling);
+  delButton.onclick = function(ev) {
+    ul.removeChild(li);
+  }
+}
+
+function resetWordSelection() {
+  var gridCells = document.getElementsByClassName('grid-cell');
+
+  addUserWord();
+  for (var i = 0; i < gridCells.length; i++) {
+    gridCells[i].removeAttribute('selected');
+  }
+}
+
+function addGridCellLetter(gridCell) {
+  var wordEntryTop = document.getElementById('word-entry-top');
+  wordEntryTop.value += gridCell.textContent.toLowerCase();
+  gridCell.setAttribute('selected', '');
+}
+
+
+function gridCellDown(ev) {
+  if (! ev.ctrlKey) {
+    resetWordSelection();
+  }
+
+  if (! ev.target.parentNode.getAttribute('selected')) {
+    addGridCellLetter(ev.target.parentNode);
+  }
+}
+
+function gridCellEnter(ev) {
+  if ((ev.buttons === 1) &&
+      (ev.target.parentNode.getAttribute('selected') !== '')) {
+    addGridCellLetter(ev.target.parentNode);
+  }
 }
 
 function submitSolve() {
   var words = '';
   var ul = document.getElementById("user-word-list");
+  var wordEntries = document.getElementsByClassName('word-entry');
 
-  for (var i = 0; i < ul.children.length; i++) {
-    var li = ul.children[i];
-    words += li.childNodes[0].textContent + ' ';
+  for (var i = 0; i < wordEntries.length; i++) {
+    words += wordEntries[i].value + ' ';
   }
   var input = document.getElementById("words");
   input.value = words;
@@ -85,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     /* Initially empty status strings means status should be clock */
     if (document.getElementById("status").innerHTML == "") {
         updateClock(DURATION_MS);
-        var wordEntry = document.getElementById("word-entry")
+        var wordEntry = document.getElementById("word-entry-top")
         if (wordEntry) {
             wordEntry.disabled = true;
         }
