@@ -8,6 +8,9 @@ handlers:
 - url: /stylesheets
   static_dir: stylesheets
 
+- url: /game
+  static_dir: game
+
 - url: /scripts
   static_dir: scripts
 

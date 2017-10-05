@@ -3,6 +3,7 @@ import boggle
 import cgi
 import datetime
 import jinja2
+import json
 import os
 import pprint
 import string
@@ -47,39 +48,53 @@ def display_letters(letters):
         ret.append(string.upper(l))
     return ret
 
-class MainPage(webapp2.RequestHandler):
+def makeResponseObj(letters, solve, user_words):
+    if len(letters) > 0:
+        game.set(letters)
+    else:
+        game.shake()
+    if solve:
+        answers = game.solve()
+        answer_score = boggle.score(answers)
+        words = cross_out(answers, user_words.split())
+        lines_per_col = max(25, (len(answers)+7)/3)
+    else:
+        answers = None
+        answer_score = None
+        lines_per_col = None
+        words = {}
+
+    return {
+        u'rank': boggle.rank,
+        u'solve': solve,
+        u'letters': string.join(game.letters, u''),
+        u'display_letters': display_letters(game.letters),
+        u'answers': answers,
+        u'answer_score': answer_score,
+        u'words': words,
+        u'word_score': boggle.score(words),
+        u'lines_per_col' : lines_per_col
+    }
+
+class MainPageHandler(webapp2.RequestHandler):
     def get(self):
         letters = self.request.get(u'letters')
-        if len(letters) > 0:
-            game.set(letters)
-        else:
-            game.shake()
-        if self.request.get(u'solve'):
-            answers = game.solve()
-            answer_score = boggle.score(answers)
-            user_words = self.request.get(u'words').split()
-            words = cross_out(answers, user_words)
-            lines_per_col = max(25, (len(answers)+7)/3)
-        else:
-            answers = None
-            answer_score = None
-            lines_per_col = None
-            words = {}
+        solve = self.request.get(u'solve')
+        user_words = self.request.get(u'words')
 
-        template_values = {
-            u'rank': boggle.rank,
-            u'solve': self.request.get(u'solve'),
-            u'letters': string.join(game.letters, u''),
-            u'display_letters': display_letters(game.letters),
-            u'answers': answers,
-            u'answer_score': answer_score,
-            u'words': words,
-            u'word_score': boggle.score(words),
-            u'lines_per_col' : lines_per_col
-        }
-
+        template_values = makeResponseObj(letters, solve, user_words)
         template = jinja_environment.get_template(u'bawgle-template.html')
         self.response.out.write(template.render(template_values))
 
-app = webapp2.WSGIApplication([(u'/', MainPage)],
+class ApiHandler(webapp2.RequestHandler):
+    def get(self):
+        letters = self.request.get(u'letters')
+        solve = self.request.get(u'solve')
+        user_words = self.request.get(u'words')
+
+        resp = json.dumps(makeResponseObj(letters, solve, user_words))
+        self.response.content_type = 'application/json'
+        self.response.out.write(resp)
+
+app = webapp2.WSGIApplication([(u'/', MainPageHandler), (u'/api', ApiHandler)],
                               debug=True)
