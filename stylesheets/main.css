@@ -177,3 +177,7 @@ body {
 .grid-row {
   clear: left;
 }
+
+.invisible {
+  opacity: 0;
+}

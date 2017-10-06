@@ -35,7 +35,7 @@ function generateLetters() {
   return letters;
 }
 
-/* Return map for of given array of user words. Element value is 0 if the word 
+/* Return map for of given array of user words. Element value is 0 if the word
  * is not in the given answer object, otherwise 1.
  */
 function validateWords(answers, userWords) {
@@ -114,6 +114,7 @@ function makeGrid(rank, letters) {
 
       cellDiv.className = 'grid-cell';
       cellDiv.id = 'c' + i + '-' + j;
+      cellSpan.className = 'grid-content';
       cellSpan.onmousedown = gridCellDown;
       cellSpan.onmouseenter = gridCellEnter;
       cellSpan.textContent = displayLetter(letters[i * rank + j]);
@@ -121,6 +122,23 @@ function makeGrid(rank, letters) {
   }
 
   return grid;
+}
+
+/* XXX Hackish? consider Node property, e.g disabled */
+function setGridState(visible, enabled) {
+  var gridContents = document.getElementsByClassName('grid-content');
+  var mouseDown = (enabled ? gridCellDown : null);
+  var mouseEnter = (enabled ? gridCellEnter : null);
+
+  for (var i = 0; i < gridContents.length; i++) {
+    gridContents[i].onmousedown = mouseDown;
+    gridContents[i].onmouseenter = mouseEnter;
+    if (!visible) {
+      gridContents[i].classList.add('invisible');
+    } else {
+      gridContents[i].classList.remove('invisible');
+    }
+  }
 }
 
 function secondsToTimeDisplay(sec) {
@@ -270,7 +288,7 @@ var GameContext = function() {
   this.solutionWords = {};   // key: word, value: count
   this.userScore = undefined;           // XXX move calc to client?
   this.solutionScore = undefined;       // XXX move calc to client?
-  this.currentState = new StartState();
+  this.currentState = new StartState(this);
   var that = this;
 
   this.changeState = function(state) {
@@ -288,12 +306,14 @@ var GameContext = function() {
   };
 
   var onExpire = function() {
-    that.changeState(new SolvingState());
+    that.changeState(new SolvingState(that));
   };
   this.clock = new Clock(onTick, onExpire);
 };
 
-var StartState = function() {
+var StartState = function(game) {
+  this.game = game;
+
   this.go = function() {
     var centerPanelDiv = document.getElementById('center-panel');
     var playingButton = document.getElementById('playing');
@@ -305,7 +325,7 @@ var StartState = function() {
     var solutionWordList = document.getElementById('solution-word-list');
 
     playingButton.onclick = function() {
-      game.changeState(new PlayingState());
+      game.changeState(new PlayingState(game));
     };
     document.getElementById('playing-icon').innerHTML = 'play_arrow';
     solveButton.disabled = false;
@@ -315,6 +335,7 @@ var StartState = function() {
       centerPanelDiv.removeChild(grid);
     }
     centerPanelDiv.appendChild(makeGrid(game.rank, game.letters));
+    setGridState(true, false);
     playingButton.disabled = false;
     yourWordsLabel.textContent = 'Your words:';
     removeAllChildren(userWordList);
@@ -333,36 +354,43 @@ var StartState = function() {
   };
 };
 
-var PlayingState = function() {
+var PlayingState = function(game) {
+  this.game = game;
+
   this.go = function() {
     var playingButton = document.getElementById('playing');
     var wordEntry = document.getElementById('word-entry-top');
     game.clock.run();
     playingButton.onclick = function() {
-      game.changeState(new PausedState());
+      game.changeState(new PausedState(game));
     };
     wordEntry.disabled = false;
     wordEntry.focus();
 
-    // TODO also enable grid mouse actions
     document.getElementById('playing-icon').innerHTML = 'pause';
+    setGridState(true, true);
   };
 };
 
-var PausedState = function() {
+var PausedState = function(game) {
+  this.game = game;
+
   this.go = function() {
     var playingButton = document.getElementById('playing');
     game.clock.pause();
     playingButton.onclick = function() {
-      game.changeState(new PlayingState());
+      game.changeState(new PlayingState(game));
     };
     document.getElementById('word-entry-top').disabled = true;
     document.getElementById('grid').disabled = true;
     document.getElementById('playing-icon').innerHTML = 'play_arrow';
+    setGridState(false, false);
   };
 };
 
-var SolvingState = function() {
+var SolvingState = function(game) {
+  this.game = game;
+
   this.go = function() {
     var wordEntries = document.getElementsByClassName('word-entry');
     var statusHeader = document.getElementById('status');
@@ -402,13 +430,15 @@ var SolvingState = function() {
         game.solutionWords = json.answers; // XXX change server
         game.userScore = json.word_score;
         game.solutionScore = json.answer_score;
-        game.changeState(new SolvedState);
+        game.changeState(new SolvedState(game));
       });
     });
   };
 };
 
-var SolvedState = function() {
+var SolvedState = function(game) {
+  this.game = game;
+
   this.go = function() {
     var playingButton = document.getElementById('playing');
     var solveButton = document.getElementById('solve');
@@ -418,6 +448,7 @@ var SolvedState = function() {
 
     // Header
     document.getElementById('playing-icon').innerHTML = 'play_arrow';
+    setGridState(true, false);
     playingButton.disabled = true;
     solveButton.disabled = true;
 
@@ -429,7 +460,7 @@ var SolvedState = function() {
     validatedWords = validateWords(game.solutionWords, game.userWords);
     removeAllChildren(userWordList);
     for (var i = 0; i < game.userWords.length; i++) {
-      var li = makeUserWordLi(game.userWords[i], 
+      var li = makeUserWordLi(game.userWords[i],
                               validatedWords[game.userWords[i]]);
       userWordList.appendChild(li);
     };
@@ -445,7 +476,7 @@ var SolvedState = function() {
     // Answer word panel TODO: sort on server??
     var sortedWords = Object.keys(game.solutionWords).sort();
     for (var i = 0; i < sortedWords.length; i++) {
-      var li = makeAnswerWordLi(sortedWords[i], 
+      var li = makeAnswerWordLi(sortedWords[i],
                                 game.solutionWords[sortedWords[i]]);
       answerWordList.appendChild(li);
     }
@@ -455,18 +486,18 @@ var SolvedState = function() {
 function initialize() {
   var newButton = document.getElementById('new');
   var solveButton = document.getElementById('solve');
+  var game = new GameContext();
 
   newButton.onclick = function() {
-    game.changeState(new StartState());
+    game.changeState(new StartState(game));
   };
   solveButton.onclick = function() {
-    game.changeState(new SolvingState());
+    game.changeState(new SolvingState(game));
   };
 
   game.start();
 }
 
-var game = new GameContext();
 document.addEventListener('DOMContentLoaded', function(event) {
   initialize();
 });
