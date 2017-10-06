@@ -4,26 +4,75 @@ function removeAllChildren(node) {
   }
 }
 
-function generateLetters() {
-  // TODO implement
-  return 'ziroahcstntgvehdgrtaytoep';
+/* Return random permutation of array using Fisher-Yates */
+function shuffleArray(array) {
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
 }
 
-function makeWordAnchor(word) {
-  // TODO: copy from old server
-  return word;
+function generateLetters() {
+  var letters = '';
+  var cubes = ['eeeeam', 'oooutt', 'setcpi', 'asairf', 'yrrphi',
+               'hhldro', 'cpilet', 'eeumga', 'eeeeaa', 'hrlond',
+               'sssune', 'thhodn', 'afirys', 'menang', 'fiyspr',
+               'deannn', 'rrvgwo', 'sctncw', 'ddornl', 'faaars',
+               'ciietl', 'tttoem', 'iiiett', 'touown', 'kzxqbj'];
+
+  // [range(cubes.length)]
+  var indexes = Array.apply(null, Array(cubes.length)).map(
+    function(_, i) {return i;});
+
+  shuffleArray(indexes);
+  for (var i = 0; i < indexes.length; i++) {
+    letters += cubes[i][Math.floor(Math.random() * (cubes[i].length))];
+  }
+
+  return letters;
+}
+
+/* Return map for of given array of user words. Element value is 0 if the word 
+ * is not in the given answer object, otherwise 1.
+ */
+function validateWords(answers, userWords) {
+  var words = {};
+
+  for (var i = 0; i < userWords.length; i++) {
+    var w = userWords[i].toLowerCase();
+    if (w in answers) {
+      words[w] = 1;
+    } else {
+      words[w] = 0;
+    }
+  }
+
+  return words;
+}
+
+function makeWordAnchor(word, crossOut) {
+  var wordAnchorBase = 'http://wiktionary.org/wiki/';
+  var a = document.createElement('a');
+  a.href = wordAnchorBase + word;
+
+  if (crossOut) {
+    var del = document.createElement('del');
+    del.textContent = word;
+    a.appendChild(del);
+  } else {
+    a.textContent = word;
+  }
+
+  return a;
 }
 
 function makeUserWordLi(word, valid) {
   var li = document.createElement('li');
 
-  if (!valid) {
-    var del = document.createElement('del');
-    li.appendChild(del);
-    del.textContent = makeWordAnchor(word);
-  } else {
-    li.textContent = makeWordAnchor(word);
-  }
+  li.appendChild(makeWordAnchor(word, !valid));
 
   return li;
 }
@@ -31,16 +80,20 @@ function makeUserWordLi(word, valid) {
 function makeAnswerWordLi(word, count) {
   var li = document.createElement('li');
 
-  if (count > 1) {
-    li.textContent = makeWordAnchor(word) + '(' + count + ')';
-  } else {
-    li.textContent = makeWordAnchor(word);
-  }
+  var displayWord = (count > 1 ? word + '(' + count + ')' : word);
+  li.appendChild(makeWordAnchor(displayWord, false));
 
   return li;
 }
 
-function makeGrid(rank, displayLetters) {
+function displayLetter(letter) {
+  if (letter == 'q') {
+    letter = 'qu';
+  }
+  return letter.toUpperCase();
+}
+
+function makeGrid(rank, letters) {
   var grid = document.createElement('div');
 
   grid.id = 'grid';
@@ -63,7 +116,7 @@ function makeGrid(rank, displayLetters) {
       cellDiv.id = 'c' + i + '-' + j;
       cellSpan.onmousedown = gridCellDown;
       cellSpan.onmouseenter = gridCellEnter;
-      cellSpan.textContent = displayLetters[i * rank + j];
+      cellSpan.textContent = displayLetter(letters[i * rank + j]);
     }
   }
 
@@ -89,7 +142,7 @@ function addUserWord() {
   var input = document.createElement('input');
   var wordEntryTop = document.getElementById('word-entry-top');
 
-  if (wordEntryTop.value === '') {
+  if (!wordEntryTop || wordEntryTop.value === '') {
     return;
   }
 
@@ -125,10 +178,11 @@ function resetWordSelection() {
 
 function addGridCellLetter(gridCell) {
   var wordEntryTop = document.getElementById('word-entry-top');
-  wordEntryTop.value += gridCell.textContent.toLowerCase();
-  gridCell.setAttribute('selected', '');
+  if (wordEntryTop) {
+    wordEntryTop.value += gridCell.textContent.toLowerCase();
+    gridCell.setAttribute('selected', '');
+  }
 }
-
 
 function gridCellDown(ev) {
   if (! ev.ctrlKey) {
@@ -282,11 +336,13 @@ var StartState = function() {
 var PlayingState = function() {
   this.go = function() {
     var playingButton = document.getElementById('playing');
+    var wordEntry = document.getElementById('word-entry-top');
     game.clock.run();
     playingButton.onclick = function() {
       game.changeState(new PausedState());
     };
-    document.getElementById('word-entry-top').disabled = false;
+    wordEntry.disabled = false;
+    wordEntry.focus();
 
     // TODO also enable grid mouse actions
     document.getElementById('playing-icon').innerHTML = 'pause';
@@ -308,13 +364,20 @@ var PausedState = function() {
 
 var SolvingState = function() {
   this.go = function() {
-    game.clock.cancel();
     var wordEntries = document.getElementsByClassName('word-entry');
+    var statusHeader = document.getElementById('status');
+
+    statusHeader.textContent = 'Solving...';
+    game.clock.cancel();
+    resetWordSelection();
 
     game.userWords = [];
     for (var i = 0; i < wordEntries.length; i++) {
-      game.userWords.push(wordEntries[i].value);
+      if (wordEntries[i].value !== '') {
+        game.userWords.push(wordEntries[i].value);
+      }
     }
+    game.userWords = game.userWords.sort();
 
     // XXX is this the best way to construct the URL?
     var url = new URL('/api', document.location.origin);
@@ -362,12 +425,14 @@ var SolvedState = function() {
     yourWordsLabel.textContent = 'Your words (' +
       game.userWords.length + '):';
 
-    // TODO Validate user words
+    // Validate user words
+    validatedWords = validateWords(game.solutionWords, game.userWords);
     removeAllChildren(userWordList);
-    game.userWords.forEach(function(word) {
-      var li = makeUserWordLi(word, true);
+    for (var i = 0; i < game.userWords.length; i++) {
+      var li = makeUserWordLi(game.userWords[i], 
+                              validatedWords[game.userWords[i]]);
       userWordList.appendChild(li);
-    });
+    };
     statusHeader.textContent = 'Your score: ' + game.userScore +
                                ' out of ' + game.solutionScore;
 
@@ -378,8 +443,10 @@ var SolvedState = function() {
       '):';
 
     // Answer word panel TODO: sort on server??
-    for (var key in game.solutionWords) {
-      var li = makeAnswerWordLi(key, game.solutionWords[key]);
+    var sortedWords = Object.keys(game.solutionWords).sort();
+    for (var i = 0; i < sortedWords.length; i++) {
+      var li = makeAnswerWordLi(sortedWords[i], 
+                                game.solutionWords[sortedWords[i]]);
       answerWordList.appendChild(li);
     }
   };
