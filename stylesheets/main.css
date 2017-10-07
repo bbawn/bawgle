@@ -19,13 +19,13 @@ body {
   float: left;
   display: block;
   text-align: center;
-  padding: 9px 10px;
+  vertical-align: middle;
+  padding: 4px 10px 6px 10px;
   text-decoration: none;
+  height: 27.5px;
   border-width: 0;
   background: rgba(0, 0, 0, 0.0);
-  font-size: 18px;
   color: white;
-  line-height: 1.5em;
 }
 
 #help, #playing {
@@ -37,7 +37,7 @@ body {
 }
 
 
-.topitem:hover, .topitem:focus {
+.topitem:hover {
   background: #68c88c;
   color: #014725;
 }
@@ -97,6 +97,7 @@ body {
 
 .word-list li {
   list-style-type: none;
+  margin-top: 1px;
 }
 
 .word-list a {
@@ -125,15 +126,35 @@ body {
   color: #01FEAA;
 }
 
-.word-entry {
-  width: 10em;
+
+#word-entry-top {
+  outline: 1px dotted;
 }
 
-.word-entry-delete, .word-entry-delete {
-  height: 24px;
+.word-entry:hover, .word-entry:focus {
+  outline: 1px dotted;
+  background: #68c88c;
+  color: #014725;
+}
+
+.word-entry {
+  width: 10em;
+  border-width: 0;
+  font-size: 14px;
+  padding: 0;
+  margin-right: 3px;
+}
+
+.word-entry-button {
   vertical-align: middle;
   border-width: 0;
   padding: 0;
+  background: white;
+  height: 18px;
+}
+
+.material-icons.md-18 {
+  font-size: 18px;
 }
 
 .noselect {

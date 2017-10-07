@@ -86,6 +86,28 @@ function makeAnswerWordLi(word, count) {
   return li;
 }
 
+function makeWordEntryLi(word, inputId, buttonIcon, onButtonClick) {
+  var li = document.createElement('li');
+  var input = document.createElement('input');
+  var button = document.createElement('button');
+  var buttonSpan = document.createElement('span');
+
+  input.value = word;
+  input.type = 'text';
+  input.className = 'word-entry';
+  input.id = inputId;
+  button.className = 'word-entry-button';
+  button.onclick = onButtonClick;
+  buttonSpan.className ='material-icons md-18';
+  buttonSpan.textContent = buttonIcon;
+
+  button.appendChild(buttonSpan);
+  li.appendChild(input);
+  li.appendChild(button);
+
+  return li;
+}
+
 function displayLetter(letter) {
   if (letter == 'q') {
     letter = 'qu';
@@ -155,40 +177,25 @@ function wordEntryKeypress(event) {
 }
 
 function addUserWord() {
-  var ul = document.getElementById('user-word-list');
-  var li = document.createElement('li');
-  var input = document.createElement('input');
   var wordEntryTop = document.getElementById('word-entry-top');
+  var ul = document.getElementById('user-word-list');
 
   if (!wordEntryTop || wordEntryTop.value === '') {
     return;
   }
 
-  input.value = wordEntryTop.value;
-  wordEntryTop.value = '';
-  input.className = 'word-entry';
-  var delButton = document.createElement('button');
-  delButton.className = 'word-entry-delete';
-  var delSpan = document.createElement('span');
-  delSpan.className ='material-icons md-18';
-  delSpan.textContent='remove_circle';
-
-  delButton.appendChild(delSpan);
-  li.appendChild(input);
-  li.appendChild(delButton);
-  ul.appendChild(li);
+  var li = makeWordEntryLi(wordEntryTop.value, '', 'remove_circle',
+    function(ev) { ul.removeChild(li); });
 
   // New li goes after top one, simulate insertAfter
   ul.insertBefore(li, wordEntryTop.parentNode.nextSibling);
-  delButton.onclick = function(ev) {
-    ul.removeChild(li);
-  };
+  wordEntryTop.value = '';
+  wordEntryTop.focus();
 }
 
 function resetWordSelection() {
   var gridCells = document.getElementsByClassName('grid-cell');
 
-  addUserWord();
   for (var i = 0; i < gridCells.length; i++) {
     gridCells[i].removeAttribute('selected');
   }
@@ -204,6 +211,7 @@ function addGridCellLetter(gridCell) {
 
 function gridCellDown(ev) {
   if (! ev.ctrlKey) {
+    addUserWord();
     resetWordSelection();
   }
 
@@ -339,15 +347,12 @@ var StartState = function(game) {
     playingButton.disabled = false;
     yourWordsLabel.textContent = 'Your words:';
     removeAllChildren(userWordList);
-    var li = document.createElement('li');
-    var wordEntryInput = document.createElement('input');
-    wordEntryInput.id = 'word-entry-top';
-    wordEntryInput.className = 'word-entry';
-    wordEntryInput.type = 'text';
+
+    var li = makeWordEntryLi('', 'word-entry-top', 'add_circle', addUserWord);
+    userWordList.appendChild(li);
+    var wordEntryInput = document.getElementById('word-entry-top');
     wordEntryInput.disabled = true;
     wordEntryInput.onkeypress = wordEntryKeypress;
-    li.appendChild(wordEntryInput);
-    userWordList.appendChild(li);
 
     solutionLabel.innerHTML = '';
     removeAllChildren(solutionWordList);
@@ -405,7 +410,6 @@ var SolvingState = function(game) {
         game.userWords.push(wordEntries[i].value);
       }
     }
-    game.userWords = game.userWords.sort();
 
     // XXX is this the best way to construct the URL?
     var url = new URL('/api', document.location.origin);
@@ -456,12 +460,12 @@ var SolvedState = function(game) {
     yourWordsLabel.textContent = 'Your words (' +
       game.userWords.length + '):';
 
-    // Validate user words
     validatedWords = validateWords(game.solutionWords, game.userWords);
     removeAllChildren(userWordList);
-    for (var i = 0; i < game.userWords.length; i++) {
-      var li = makeUserWordLi(game.userWords[i],
-                              validatedWords[game.userWords[i]]);
+    var sortedWords = game.userWords.sort();
+    for (var i = 0; i < sortedWords.length; i++) {
+      var li = makeUserWordLi(sortedWords[i],
+                              validatedWords[sortedWords[i]]);
       userWordList.appendChild(li);
     };
     statusHeader.textContent = 'Your score: ' + game.userScore +
