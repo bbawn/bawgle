@@ -4,6 +4,15 @@ function removeAllChildren(node) {
   }
 }
 
+function calcAbsoluteTop(element) {
+  var top = 0;
+  for (var e = element; e; e = e.parentElement) {
+    top += e.offsetTop;
+    console.log('e ' + e + ' offsetTop ' + e.offsetTop);
+  }
+  return top;
+}
+
 /* Return random permutation of array using Fisher-Yates */
 function shuffleArray(array) {
   for (var i = array.length - 1; i > 0; i--) {
@@ -176,6 +185,15 @@ function wordEntryKeypress(event) {
   }
 }
 
+/* Test */
+function testAddUserWord(nwords, nchar) {
+  var wordEntryTop = document.getElementById('word-entry-top');
+  for (var i = 0; i < nwords; i++) {
+    wordEntryTop.value = (i).toString()[0].repeat(nchar);
+    addUserWord();
+  }    
+}
+
 function addUserWord() {
   var wordEntryTop = document.getElementById('word-entry-top');
   var ul = document.getElementById('user-word-list');
@@ -323,7 +341,7 @@ var StartState = function(game) {
   this.game = game;
 
   this.go = function() {
-    var centerPanelDiv = document.getElementById('center-panel');
+    var gridPanelDiv = document.getElementById('left-panel');
     var playingButton = document.getElementById('playing');
     var solveButton = document.getElementById('solve');
     var yourWordsLabel = document.getElementById('your-words-label');
@@ -332,6 +350,7 @@ var StartState = function(game) {
     var solutionLabel = document.getElementById('solution-label');
     var solutionWordList = document.getElementById('solution-word-list');
 
+    game.clock.cancel();
     playingButton.onclick = function() {
       game.changeState(new PlayingState(game));
     };
@@ -340,9 +359,9 @@ var StartState = function(game) {
     setClockDisplay(game.clock.durationMs);
     game.letters = generateLetters();
     if (grid) {
-      centerPanelDiv.removeChild(grid);
+      gridPanelDiv.removeChild(grid);
     }
-    centerPanelDiv.appendChild(makeGrid(game.rank, game.letters));
+    gridPanelDiv.appendChild(makeGrid(game.rank, game.letters));
     setGridState(true, false);
     playingButton.disabled = false;
     yourWordsLabel.textContent = 'Your words:';
@@ -487,6 +506,50 @@ var SolvedState = function(game) {
   };
 };
 
+/* Word lists dynamically extend to bottom of window view port */
+
+function adjustWordPanelHeight(game) {
+  var wordPanels = document.getElementsByClassName('word-panel');
+  var wordPanelTop = calcAbsoluteTop(wordPanels[0]);
+  var grid = document.getElementById('grid');
+  
+  var newHeight = window.innerHeight - wordPanelTop;
+
+  // If there is a grid, don't set panel view port to height smaller than 
+  // grid (avoid multiple sbs)
+  if (grid) {
+
+    // XXX for some reason grid.offsetHeight omits last row. Some arcane
+    // aspect of grid-cell float layout. Hackaround it. What a mess. I 
+    // don't understand layouts very well...
+    var gridHeight = grid.offsetHeight * game.rank / (game.rank - 1);
+    newHeight = Math.max(gridHeight, newHeight);
+  }
+
+  for (var i = 0; i < wordPanels.length; i++) {
+    wordPanels[i].style.height = newHeight + 'px';
+  }
+
+  console.log('innerHeight: ' + window.innerHeight + 'wordPanelTop: ' + wordPanelTop);
+}
+
+/* Test */
+function testDisplayUserWord(nwords, nchar) {
+  var userWordList = document.getElementById('user-word-list');
+  for (var i = 0; i < nwords; i++) {
+    var li = makeUserWordLi((i).toString()[0].repeat(nchar), nchar % 2);
+    userWordList.appendChild(li);
+  };
+}
+function testDisplayAnswerWord(nwords, nchar) {
+  var answerWordList = document.getElementById('solution-word-list');
+  for (var i = 0; i < nwords; i++) {
+    var li = makeAnswerWordLi((i).toString()[0].repeat(nchar), nchar % 2);
+    answerWordList.appendChild(li);
+  }
+}
+
+
 function initialize() {
   var newButton = document.getElementById('new');
   var solveButton = document.getElementById('solve');
@@ -500,6 +563,11 @@ function initialize() {
   };
 
   game.start();
+
+  window.onresize = function() {
+    adjustWordPanelHeight(game);
+  };
+  adjustWordPanelHeight(game);
 }
 
 document.addEventListener('DOMContentLoaded', function(event) {

@@ -6,7 +6,8 @@ html {
 body {
   margin: 0;
   height: 100%;
-  overflow: scroll;
+  overflow: auto;
+  background: #e0e0e0;
 }
 
 #control {
@@ -38,8 +39,7 @@ body {
 
 
 .topitem:hover {
-  background: #68c88c;
-  color: #014725;
+  color: #68c88c;
 }
 
 #score {
@@ -56,34 +56,37 @@ body {
   
 #left-panel {
   position: absolute;
-  top: 3.6em;
-  left: 0;
+  top: 2.5em;
+  left: 2.5em;
   width: 33em;
 } 
 
 #center-panel {
   position: absolute;
-  top: 3.6em;
-  left: 33em;
-  width: 33em;
+  top: 2.5em;
+  left: 35em;
+  width: 18em;
 } 
 
 #right-panel {
   position: absolute;
-  top: 3.6em;
-  left: 66em;
-  width: 33em;
+  top: 2.5em;
+  left: 53em;
+  width: 18em;
 } 
 
 .word-panel {
-  column-count: 2;
+  /* column-count: 2; */
   column-fill: auto;
-  height: 31em;
+/*  height: 31em; */
+  overflow: auto;
+  margin-top: 15px;
 }
 
 .panel-label {
   padding-left: 2.5rem;
   padding-right: 2.5rem;
+  margin-bottom: 10px;
 }
 
 #status {
@@ -143,13 +146,14 @@ body {
   font-size: 14px;
   padding: 0;
   margin-right: 3px;
+  background: transparent;
 }
 
 .word-entry-button {
   vertical-align: middle;
   border-width: 0;
   padding: 0;
-  background: white;
+  background: transparent;
   height: 18px;
 }
 
@@ -174,7 +178,7 @@ body {
 
 .grid-cell {
   float: left;
-  font-family: "Times New Roman", Times, serif;
+  /* font-family: "Times New Roman", Times, serif; */
   font-weight: bold;
   text-align: center;
   float: left;
@@ -184,6 +188,7 @@ body {
   border: 5px solid #016765;
   border-collapse: collapse;
   border-radius: 5px;
+  background: white;
 }
 
 .grid-cell span:hover, .grid-cell span:focus {
