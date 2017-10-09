@@ -506,7 +506,7 @@ var SolvedState = function(game) {
   };
 };
 
-/* Word lists dynamically extend to bottom of window view port */
+/* Word lists dynamically extend to bottom and left of window view port */
 
 function adjustWordPanelHeight(game) {
   var wordPanels = document.getElementsByClassName('word-panel');
@@ -514,6 +514,10 @@ function adjustWordPanelHeight(game) {
   var grid = document.getElementById('grid');
   
   var newHeight = window.innerHeight - wordPanelTop;
+  // TODO: calc this based on current element positions, sizes
+  var newWidth = Math.max(window.innerWidth - (64 * 14), (28 * 14));
+
+  wordPanels[1].style.width = newWidth + 'px';
 
   // If there is a grid, don't set panel view port to height smaller than 
   // grid (avoid multiple sbs)

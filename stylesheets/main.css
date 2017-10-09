@@ -12,7 +12,7 @@ body {
 
 #control {
   overflow: hidden;
-  background: #016765;
+  background: #124da1;
   color: white;
 }
 
@@ -39,7 +39,7 @@ body {
 
 
 .topitem:hover {
-  color: #68c88c;
+  color: #bad4f7;
 }
 
 #score {
@@ -51,7 +51,7 @@ body {
 }
 
 #main {
-  min-width: 99em;
+  min-width: 93em;
 }
   
 #left-panel {
@@ -65,18 +65,18 @@ body {
   position: absolute;
   top: 2.5em;
   left: 35em;
-  width: 18em;
+  width: 28em;
 } 
 
 #right-panel {
   position: absolute;
   top: 2.5em;
-  left: 53em;
-  width: 18em;
+  left: 64em;
+  /* width: 60em; set dynamically to remaining window viewport width */
 } 
 
 .word-panel {
-  /* column-count: 2; */
+  column-width: 11em;
   column-fill: auto;
 /*  height: 31em; */
   overflow: auto;
@@ -136,12 +136,12 @@ body {
 
 .word-entry:hover, .word-entry:focus {
   outline: 1px dotted;
-  background: #68c88c;
-  color: #014725;
+  background: #bad4f7;
+  color: #124da1;
 }
 
 .word-entry {
-  width: 10em;
+  width: 9em;
   border-width: 0;
   font-size: 14px;
   padding: 0;
@@ -185,19 +185,19 @@ body {
   line-height: 2.5em;
   width: 2.5em; 
   margin: 3px;
-  border: 5px solid #016765;
+  border: 5px solid #124da1;
   border-collapse: collapse;
   border-radius: 5px;
   background: white;
 }
 
 .grid-cell span:hover, .grid-cell span:focus {
-  color: #68c88c;
-  background: #014725;
+  color: #bad4f7;
+  background: #124da1;
 }
 
 .grid-cell[selected] {
-  background: lightGreen;
+  background: #bad4f7;
 }
 
 .grid-row {
