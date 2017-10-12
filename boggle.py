@@ -157,7 +157,7 @@ class Node:
 class Dictionary:
     """ Collection of words that allows prefix lookup."""
 
-    def __init__(self, file=u'/usr/share/dict/words'):
+    def __init__(self, file=u'dict/en_US-dic.txt'):
         self.root = Node('', False)
         prog = re.compile(u"[^a-z]")
         with open(file, u'r') as f:
