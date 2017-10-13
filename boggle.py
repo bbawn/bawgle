@@ -69,8 +69,8 @@ class Game:
     def set(self, letters):
         """ Set game grid to given letter string."""
         if len(letters) != nletters():
-            raise ValueError('Invalid letters: ' + letters + 
-                             ' must be of length ' + str(nletters()))
+            raise ValueError('Invalid letters: ' + letters + ' len: ' + 
+                             str(len(letters)) + ' must be of length ' + str(nletters()))
         self.letters = list(letters)
 
     def dump(self, stream=sys.stdout):

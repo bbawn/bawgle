@@ -1,3 +1,9 @@
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message || 'Assertion failed');
+  }
+}
+
 function removeAllChildren(node) {
   while (node.firstChild) {
     node.removeChild(node.firstChild);
@@ -22,26 +28,6 @@ function shuffleArray(array) {
     array[j] = temp;
   }
   return array;
-}
-
-function generateLetters() {
-  var letters = '';
-  var cubes = ['eeeeam', 'oooutt', 'setcpi', 'asairf', 'yrrphi',
-               'hhldro', 'cpilet', 'eeumga', 'eeeeaa', 'hrlond',
-               'sssune', 'thhodn', 'afirys', 'menang', 'fiyspr',
-               'deannn', 'rrvgwo', 'sctncw', 'ddornl', 'faaars',
-               'ciietl', 'tttoem', 'iiiett', 'touown', 'kzxqbj'];
-
-  // [range(cubes.length)]
-  var indexes = Array.apply(null, Array(cubes.length)).map(
-    function(_, i) {return i;});
-
-  shuffleArray(indexes);
-  for (var i = 0; i < indexes.length; i++) {
-    letters += cubes[i][Math.floor(Math.random() * (cubes[i].length))];
-  }
-
-  return letters;
 }
 
 /* Return map for of given array of user words. Element value is 0 if the word
@@ -314,6 +300,7 @@ var GameContext = function() {
   this.solutionWords = {};   // key: word, value: count
   this.userScore = undefined;           // XXX move calc to client?
   this.solutionScore = undefined;       // XXX move calc to client?
+  this.langCfg = new EnUsLangCfg();
   this.currentState = new StartState(this);
   var that = this;
 
@@ -335,7 +322,122 @@ var GameContext = function() {
     that.changeState(new SolvingState(that));
   };
   this.clock = new Clock(onTick, onExpire);
+
+  /* Generate a new letter sequence by simulated a real boggle
+   * game: shake the grid and get a random permutation of the 
+   * cubes with random face showing on each.
+   */
+  this.generateLettersCubes = function () {
+    // TODO - redo with LangCfg
+    this.letters = '';
+    var cubes = ['eeeeam', 'oooutt', 'setcpi', 'asairf', 'yrrphi',
+                 'hhldro', 'cpilet', 'eeumga', 'eeeeaa', 'hrlond',
+                 'sssune', 'thhodn', 'afirys', 'menang', 'fiyspr',
+                 'deannn', 'rrvgwo', 'sctncw', 'ddornl', 'faaars',
+                 'ciietl', 'tttoem', 'iiiett', 'touown', 'kzxqbj'];
+
+    // [range(cubes.length)]
+    var indexes = Array.apply(null, Array(cubes.length)).map(
+      function(_, i) {return i;});
+
+    shuffleArray(indexes);
+    for (var i = 0; i < indexes.length; i++) {
+      this.letters += cubes[i][Math.floor(Math.random() * (cubes[i].length))];
+    }
+  };
+
+  /* Generate a new letter sequence using a random letter selection
+   * with each letter's probability of selection equal to its fractional
+   * occurrence rate in the language's expanded dictionary. An array with
+   * the cumulative probabilities of each letter is used. A random float
+   * in the range [0, 1) is chosen, the selected letter is the largest one
+   * with a cumulative probabiliy less than the random value.
+   * TODO: this needs tests
+   */
+  this.generateLettersHist = function () {
+    this.letters = '';
+    cumProb = 0.0;
+    probs = [];
+    for (var i = 0; i < this.langCfg.letters.length; i++) {
+      cumProb += this.langCfg.letterFreqs[this.langCfg.letters[i]];
+      probs[i] = cumProb;
+    }
+    for (var i = 0; i < this.rank * this.rank; i++) {
+      ran = Math.random();
+
+      /* Linear search for last cumulative prob less than random number */
+      var j;
+      for (j = 0; j < this.langCfg.letters.length; j++) {
+        if (probs[j] > ran) {
+          break;
+        }
+      }
+      assert(j < this.langCfg.letters.length);
+
+      this.letters += this.langCfg.letters[j][0];
+    }
+  };
+
+  this.generateLetters = this.generateLettersHist;
+
 };
+
+var EnUsLangCfg = function() {
+  this.letters = [
+    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+    "n", "o", "p", "qu", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+  ];
+
+  this.letterEquivs = {
+    "\u00e0": "a",
+    "\u00e1": "a",
+    "\u00e2": "a",
+    "\u00e4": "a",
+    "\u00e5": "a",
+    "\u00e7": "c",
+    "\u00e8": "e",
+    "\u00e9": "e",
+    "\u00ea": "e",
+    "\u00eb": "e",
+    "\u00ed": "i",
+    "\u00ef": "i",
+    "\u00f1": "n",
+    "\u00f3": "o",
+    "\u00f4": "o",
+    "\u00f6": "o",
+    "\u00fb": "u",
+    "\u00fc": "u"
+  };
+
+  this.letterFreqs = {
+    "a": 0.07802123447903545,
+    "b": 0.019142702897246715,
+    "c": 0.037520244736368544,
+    "d": 0.03462227820766601,
+    "e": 0.11585171855317618,
+    "f": 0.012675184452042468,
+    "g": 0.026404894727370884,
+    "h": 0.022390498470397698,
+    "i": 0.08506100413892388,
+    "j": 0.002343710635234839,
+    "k": 0.009589346769839842,
+    "l": 0.05195825085477776,
+    "m": 0.027003779017455463,
+    "n": 0.07419542918841102,
+    "o": 0.058548137484254095,
+    "p": 0.025168256253374124,
+    "qu": 0.0016980385099874032,
+    "r": 0.07250242936836422,
+    "s": 0.11204102933237359,
+    "t": 0.06271225481374842,
+    "u": 0.029349649091236277,
+    "v": 0.01031923699838042,
+    "w": 0.0084196508907684,
+    "x": 0.002610041389238798,
+    "y": 0.015588267050566852,
+    "z": 0.004262731689760662
+  };
+}
 
 var StartState = function(game) {
   this.game = game;
@@ -357,7 +459,7 @@ var StartState = function(game) {
     document.getElementById('playing-icon').innerHTML = 'play_arrow';
     solveButton.disabled = false;
     setClockDisplay(game.clock.durationMs);
-    game.letters = generateLetters();
+    game.generateLetters();
     if (grid) {
       gridPanelDiv.removeChild(grid);
     }
