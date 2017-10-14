@@ -615,7 +615,6 @@ var SolvingState = function(game) {
 
     url.searchParams.append('words', game.userWords.join(' '));
     url.searchParams.append('letters', game.letters.join(' '));
-    url.searchParams.append('solve', '1'); // XXX remove
 
     fetch(url).then(function(response) {
 

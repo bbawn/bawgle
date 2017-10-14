@@ -40,62 +40,29 @@ def word_anchor_filter(word, delete=False):
 
 jinja_environment.filters['word_anchor'] = word_anchor_filter
 
-def display_letters(letters):
-    # Return list of letters in display format
-    ret = []
-    for l in letters:
-        if l == u'q':
-            l = u'qu'
-        ret.append(string.upper(l))
-    return ret
-
-def makeResponseObj(letters, solve, user_words):
+def makeResponseObj(letters, user_words):
     if len(letters) > 0:
         game.set(letters)
     else:
         game.shake()
-    if solve:
-        answers = game.solve()
-        answer_score = boggle.score(answers)
-        words = cross_out(answers, user_words.split())
-        lines_per_col = max(25, (len(answers)+7)/3)
-    else:
-        answers = None
-        answer_score = None
-        lines_per_col = None
-        words = {}
+
+    answers = game.solve()
+    answer_score = boggle.score(answers)
+    words = cross_out(answers, user_words.split())
 
     return {
-        u'rank': boggle.rank,
-        u'solve': solve,
-        u'letters': string.join(game.letters, u''),
-        u'display_letters': game.letters,
         u'answers': answers,
         u'answer_score': answer_score,
-        u'words': words,
         u'word_score': boggle.score(words),
-        u'lines_per_col' : lines_per_col
     }
-
-class MainPageHandler(webapp2.RequestHandler):
-    def get(self):
-        letters = self.request.get(u'letters')
-        solve = self.request.get(u'solve')
-        user_words = self.request.get(u'words')
-
-        template_values = makeResponseObj(letters, solve, user_words)
-        template = jinja_environment.get_template(u'bawgle-template.html')
-        self.response.out.write(template.render(template_values))
 
 class ApiHandler(webapp2.RequestHandler):
     def get(self):
         letters = self.request.get(u'letters').split()
-        solve = self.request.get(u'solve')
         user_words = self.request.get(u'words')
 
-        resp = json.dumps(makeResponseObj(letters, solve, user_words))
+        resp = json.dumps(makeResponseObj(letters, user_words))
         self.response.content_type = 'application/json'
         self.response.out.write(resp)
 
-app = webapp2.WSGIApplication([(u'/', MainPageHandler), (u'/api', ApiHandler)],
-                              debug=True)
+app = webapp2.WSGIApplication([(u'/api', ApiHandler)], debug=True)
