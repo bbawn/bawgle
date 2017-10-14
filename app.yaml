@@ -8,15 +8,20 @@ handlers:
 - url: /stylesheets
   static_dir: stylesheets
 
-- url: /game
-  static_dir: game
-
 - url: /scripts
   static_dir: scripts
 
-- url: /.*
+- url: /$
+  static_files: index.html
+  upload: index.html
+
+- url: /api
   script: bawgle.app
 
 libraries:
 - name: jinja2
   version: 2.6
+
+skip_files:
+- util/
+- dict/

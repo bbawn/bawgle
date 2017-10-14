@@ -14,8 +14,8 @@ import webapp2
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
-dictionary = boggle.Dictionary(u'dict/en_US/en_US_dic_utf-8.txt')
-# dictionary = boggle.Dictionary(u'dict/pl_PL/pl_PL_dic_utf-8.txt')
+dictionary = boggle.Dictionary(u'en_US_dic_utf-8.txt')
+# dictionary = boggle.Dictionary(u'pl_PL_dic_utf-8.txt')
 game = boggle.Game(dictionary)
 
 def cross_out(answers, user_words):

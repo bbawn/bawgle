@@ -159,7 +159,7 @@ class Node:
 class Dictionary:
     """ Collection of words that allows prefix lookup."""
 
-    def __init__(self, file=u'dict/en_US/en_US_dic_utf-8.txt'):
+    def __init__(self, file=u'en_US_dic_utf-8.txt'):
         self.root = Node('', False)
         letters_re = re.compile(u"[^a-z]")
         with open(file, u'r') as f:
