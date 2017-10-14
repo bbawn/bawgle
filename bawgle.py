@@ -14,7 +14,8 @@ import webapp2
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
-dictionary = boggle.Dictionary(u'./words')
+dictionary = boggle.Dictionary(u'dict/en_US/en_US_dic_utf-8.txt')
+# dictionary = boggle.Dictionary(u'dict/pl_PL/pl_PL_dic_utf-8.txt')
 game = boggle.Game(dictionary)
 
 def cross_out(answers, user_words):
@@ -68,7 +69,7 @@ def makeResponseObj(letters, solve, user_words):
         u'rank': boggle.rank,
         u'solve': solve,
         u'letters': string.join(game.letters, u''),
-        u'display_letters': display_letters(game.letters),
+        u'display_letters': game.letters,
         u'answers': answers,
         u'answer_score': answer_score,
         u'words': words,
@@ -88,7 +89,7 @@ class MainPageHandler(webapp2.RequestHandler):
 
 class ApiHandler(webapp2.RequestHandler):
     def get(self):
-        letters = self.request.get(u'letters')
+        letters = self.request.get(u'letters').split()
         solve = self.request.get(u'solve')
         user_words = self.request.get(u'words')
 

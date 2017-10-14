@@ -64,14 +64,16 @@ class Game:
         random.shuffle(indexes)
         for i in indexes:
             letter = Game.cubes[i][random.randrange(6)]
+            if letter == u'q':               # q is really qu
+                letter += u'u'
             self.letters.append(letter)
     
     def set(self, letters):
-        """ Set game grid to given letter string."""
+        """ Set game grid to given letter list (not string because qu)."""
         if len(letters) != nletters():
-            raise ValueError('Invalid letters: ' + letters + ' len: ' + 
+            raise ValueError('Invalid letters: ' + str(letters) + ' len: ' + 
                              str(len(letters)) + ' must be of length ' + str(nletters()))
-        self.letters = list(letters)
+        self.letters = letters
 
     def dump(self, stream=sys.stdout):
         stream.write(u"GAME:\n")
@@ -157,15 +159,15 @@ class Node:
 class Dictionary:
     """ Collection of words that allows prefix lookup."""
 
-    def __init__(self, file=u'dict/en_US-dic.txt'):
+    def __init__(self, file=u'dict/en_US/en_US_dic_utf-8.txt'):
         self.root = Node('', False)
-        prog = re.compile(u"[^a-z]")
+        letters_re = re.compile(u"[^a-z]")
         with open(file, u'r') as f:
             for line in f:
-                line = line.rstrip()
+                line = line.rstrip().lower()
                 # Skip words with non-letters
-                if prog.search(line):
-                    continue
+                if letters_re.search(line):
+                     continue
                 # PERF: slow! O(m*n) for word len m, n words
                 self._add(line)
 

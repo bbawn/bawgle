@@ -16,6 +16,8 @@
 # WITH ACUTE should match normal lower-case o in the game set. The histogram 
 # maps occurrences of each boggle letter plus any characters that equivalent
 # to it.
+#
+# Expects utf-8 encoded input.
 
 
 import argparse
@@ -25,12 +27,24 @@ import string
 import sys
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--hist", help="json histogram output file")
+parser.add_argument("--dict", help="text file with all dictionary words")
 parser.add_argument("--cfg", help="json file with with language's game configuration")
 args = parser.parse_args()
 
-# Wrap stdin and stdout so they handle utf-8 encoding
-sys.stdin = codecs.getwriter('utf-8')(sys.stdin)
-sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+if args.hist:
+    fout = open(args.hist, 'w')
+else:
+    fout = sys.stdout
+
+if args.dict:
+    fin = open(args.dict, 'r')
+else:
+    fin = sys.stdout
+
+# Wrap input and stdout so they handle utf-8 encoding
+fin = codecs.getreader('utf-8')(fin)
+fout = codecs.getwriter('utf-8')(fout)
 
 if args.cfg:
     with open(args.cfg, 'r') as fcfg:
@@ -43,7 +57,8 @@ for l in cfg['letters']:
   letter_map[l[0]] = l
 
 histogram = {}
-text = unicode(sys.stdin.read(), 'utf-8')
+# text = unicode(fin.read(), 'utf-8')
+text = fin.read()
 count = 0
 letter_seq = None
 letter = None
@@ -93,4 +108,4 @@ for k in sorted(histogram.keys()):
         + ' (' + str(frac) + ')\n')
     histogram[k] = frac
     
-print json.dumps(histogram, sort_keys=True, indent=2, separators=(',', ': '), encoding='utf-8')
+json.dump(histogram, fout, sort_keys=True, indent=2, separators=(',', ': '), encoding='utf-8')

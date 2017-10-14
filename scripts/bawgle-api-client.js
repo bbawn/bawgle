@@ -14,7 +14,6 @@ function calcAbsoluteTop(element) {
   var top = 0;
   for (var e = element; e; e = e.parentElement) {
     top += e.offsetTop;
-    console.log('e ' + e + ' offsetTop ' + e.offsetTop);
   }
   return top;
 }
@@ -104,9 +103,6 @@ function makeWordEntryLi(word, inputId, buttonIcon, onButtonClick) {
 }
 
 function displayLetter(letter) {
-  if (letter == 'q') {
-    letter = 'qu';
-  }
   return letter.toUpperCase();
 }
 
@@ -295,7 +291,7 @@ var Clock = function(onTickArg, onExpireArg) {
 
 var GameContext = function() {
   this.rank = 5;             // XXX move to config object?
-  this.letters = '';
+  this.letters = [];         // array, not string because qu
   this.userWords = [];       // PERF: would set or object be better?
   this.solutionWords = {};   // key: word, value: count
   this.userScore = undefined;           // XXX move calc to client?
@@ -329,7 +325,7 @@ var GameContext = function() {
    */
   this.generateLettersCubes = function () {
     // TODO - redo with LangCfg
-    this.letters = '';
+    this.letters = [];
     var cubes = ['eeeeam', 'oooutt', 'setcpi', 'asairf', 'yrrphi',
                  'hhldro', 'cpilet', 'eeumga', 'eeeeaa', 'hrlond',
                  'sssune', 'thhodn', 'afirys', 'menang', 'fiyspr',
@@ -342,7 +338,11 @@ var GameContext = function() {
 
     shuffleArray(indexes);
     for (var i = 0; i < indexes.length; i++) {
-      this.letters += cubes[i][Math.floor(Math.random() * (cubes[i].length))];
+      var letter = cubes[i][Math.floor(Math.random() * (cubes[i].length))];
+      if (letter == 'q') {
+        letter = 'qu';
+      }
+      this.letters.push(letter);
     }
   };
 
@@ -355,7 +355,7 @@ var GameContext = function() {
    * TODO: this needs tests
    */
   this.generateLettersHist = function () {
-    this.letters = '';
+    this.letters = [];
     cumProb = 0.0;
     probs = [];
     for (var i = 0; i < this.langCfg.letters.length; i++) {
@@ -374,7 +374,7 @@ var GameContext = function() {
       }
       assert(j < this.langCfg.letters.length);
 
-      this.letters += this.langCfg.letters[j][0];
+      this.letters.push(this.langCfg.letters[j]);
     }
   };
 
@@ -438,6 +438,84 @@ var EnUsLangCfg = function() {
     "z": 0.004262731689760662
   };
 }
+
+var PlPlLangCfg = function() {
+  this.letters = [
+    "a",
+    "\u0105",
+    "b",
+    "c",
+    "\u0107",
+    "d",
+    "e",
+    "\u0119",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
+    "l",
+    "\u0142",
+    "m",
+    "n",
+    "\u0144",
+    "o",
+    "\u00f3",
+    "p",
+    "r",
+    "s",
+    "\u015b",
+    "t",
+    "u",
+    "w",
+    "x",
+    "y",
+    "z",
+    "\u017a",
+    "\u017c"
+      ];
+
+  this.leterEquivs = {
+  };
+
+  this.letterFreqs = {
+    "a": 0.0887944381920401,
+    "b": 0.017749634505825687,
+    "c": 0.04254508689229892,
+    "d": 0.021039401462852735,
+    "e": 0.0810561866818586,
+    "f": 0.004577631455394563,
+    "g": 0.013457855494357733,
+    "h": 0.012229716590419576,
+    "i": 0.09405777331120976,
+    "j": 0.018539048082616787,
+    "k": 0.032455065957770854,
+    "l": 0.02399876132128528,
+    "m": 0.03842000571066111,
+    "n": 0.07132445087357693,
+    "o": 0.08065911870208664,
+    "p": 0.028079219407925446,
+    "r": 0.04454949882971599,
+    "s": 0.033399496881447936,
+    "t": 0.02808519653005703,
+    "u": 0.025733062090618465,
+    "w": 0.045987567038443665,
+    "x": 3.367264223748411e-05,
+    "y": 0.048632945477421946,
+    "z": 0.04707065807019623,
+    "\u00f3": 0.0034612327964965123,
+    "\u0105": 0.011715433139227432,
+    "\u0107": 0.0008698081508052552,
+    "\u0119": 0.0056482663471324555,
+    "\u0142": 0.01791263655784928,
+    "\u0144": 0.0027809359187717314,
+    "\u015b": 0.009313793527935654,
+    "\u017a": 0.0006232860830422109,
+    "\u017c": 0.005199115276419998
+  };
+}
+
 
 var StartState = function(game) {
   this.game = game;
@@ -536,7 +614,7 @@ var SolvingState = function(game) {
     var url = new URL('/api', document.location.origin);
 
     url.searchParams.append('words', game.userWords.join(' '));
-    url.searchParams.append('letters', game.letters);
+    url.searchParams.append('letters', game.letters.join(' '));
     url.searchParams.append('solve', '1'); // XXX remove
 
     fetch(url).then(function(response) {
