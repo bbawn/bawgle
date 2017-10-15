@@ -15,6 +15,10 @@ handlers:
   static_files: index.html
   upload: index.html
 
+- url: /help\.html$
+  static_files: help.html
+  upload: help.html
+
 - url: /api
   script: bawgle.app
 

@@ -736,6 +736,7 @@ function testDisplayAnswerWord(nwords, nchar) {
 function initialize() {
   var newButton = document.getElementById('new');
   var solveButton = document.getElementById('solve');
+  var helpButton = document.getElementById('help');
   var game = new GameContext();
 
   newButton.onclick = function() {
@@ -743,6 +744,10 @@ function initialize() {
   };
   solveButton.onclick = function() {
     game.changeState(new SolvingState(game));
+  };
+  helpButton.onclick = function() {
+    location.assign('help.html');
+    /* window.open('help.html'); */
   };
 
   game.start();
