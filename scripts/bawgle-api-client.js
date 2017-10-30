@@ -682,21 +682,23 @@ var SolvedState = function(game) {
                                 game.solutionWords[sortedWords[i]]);
       answerWordList.appendChild(li);
     }
+    adjustWordPanelLayout(game)
   };
 };
 
 /* Word lists dynamically extend to bottom and left of window view port */
 
-function adjustWordPanelHeight(game) {
+function adjustWordPanelLayout(game) {
   var wordPanels = document.getElementsByClassName('word-panel');
   var wordPanelTop = calcAbsoluteTop(wordPanels[0]);
   var grid = document.getElementById('grid');
+  var rightPanel = document.getElementById('right-panel');
+  var wordHeight = 18;
   
-  var newHeight = window.innerHeight - wordPanelTop;
-  // TODO: calc this based on current element positions, sizes
-  var newWidth = Math.max(window.innerWidth - (64 * 14), (28 * 14));
-
-  wordPanels[1].style.width = newWidth + 'px';
+  // 2 px adjustment needed because sometimes vert scrollbar appears
+  // when it shouldn't (XXX only on Firefox?)
+  var newHeight = Math.floor((window.innerHeight - wordPanelTop) / wordHeight)
+                    * wordHeight;
 
   // If there is a grid, don't set panel view port to height smaller than 
   // grid (avoid multiple sbs)
@@ -709,11 +711,25 @@ function adjustWordPanelHeight(game) {
     newHeight = Math.max(gridHeight, newHeight);
   }
 
+  // TODO: calc this based on current element positions, sizes, fonts, etc
+  var nUserCols = Math.max(1, Math.min(Math.ceil(game.userWords.length * wordHeight / newHeight), 2));
+  var wordColWidth = 14 * 14;
+  var centerPanelLeft = 36 * 14;
+  var newWidth = Math.max(window.innerWidth - (centerPanelLeft + nUserCols * wordColWidth), 
+                          nUserCols * wordColWidth);
+  var newRightPanelLeft = centerPanelLeft + (nUserCols * wordColWidth);
+        
+  rightPanel.style.left = newRightPanelLeft + 'px';
+  wordPanels[1].style.width = newWidth + 'px';
+
   for (var i = 0; i < wordPanels.length; i++) {
     wordPanels[i].style.height = newHeight + 'px';
   }
 
-  console.log('innerHeight: ' + window.innerHeight + 'wordPanelTop: ' + wordPanelTop);
+  console.log('innerHeight: ' + window.innerHeight + 
+    ' innerWidth: ' + window.innerWidth +
+    ' nUserCols: ' + nUserCols +
+    ' wordPanelTop: ' + wordPanelTop);
 }
 
 /* Test */
@@ -753,9 +769,9 @@ function initialize() {
   game.start();
 
   window.onresize = function() {
-    adjustWordPanelHeight(game);
+    adjustWordPanelLayout(game);
   };
-  adjustWordPanelHeight(game);
+  adjustWordPanelLayout(game);
 }
 
 document.addEventListener('DOMContentLoaded', function(event) {
