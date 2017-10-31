@@ -530,6 +530,10 @@ var StartState = function(game) {
     var solutionLabel = document.getElementById('solution-label');
     var solutionWordList = document.getElementById('solution-word-list');
 
+    game.userWords = [];
+    game.userWords = {};
+    game.userScore = undefined;
+    game.solutionScore = undefined;
     game.clock.cancel();
     playingButton.onclick = function() {
       game.changeState(new PlayingState(game));
@@ -555,6 +559,7 @@ var StartState = function(game) {
 
     solutionLabel.innerHTML = '';
     removeAllChildren(solutionWordList);
+    adjustWordPanelLayout(game)
   };
 };
 
@@ -692,6 +697,7 @@ function adjustWordPanelLayout(game) {
   var wordPanels = document.getElementsByClassName('word-panel');
   var wordPanelTop = calcAbsoluteTop(wordPanels[0]);
   var grid = document.getElementById('grid');
+  var centerPanel = document.getElementById('center-panel');
   var rightPanel = document.getElementById('right-panel');
   var wordHeight = 18;
   
@@ -712,15 +718,24 @@ function adjustWordPanelLayout(game) {
   }
 
   // TODO: calc this based on current element positions, sizes, fonts, etc
-  var nUserCols = Math.max(1, Math.min(Math.ceil(game.userWords.length * wordHeight / newHeight), 2));
+  var nUserCols = Math.max(1, Math.ceil(game.userWords.length * wordHeight / newHeight));
+  var nSolutionCols = Math.ceil(Object.keys(game.solutionWords).length * wordHeight / newHeight);
   var wordColWidth = 14 * 14;
   var centerPanelLeft = 36 * 14;
-  var newWidth = Math.max(window.innerWidth - (centerPanelLeft + nUserCols * wordColWidth), 
-                          nUserCols * wordColWidth);
-  var newRightPanelLeft = centerPanelLeft + (nUserCols * wordColWidth);
+  var totalDisplayCols = (window.innerWidth - centerPanelLeft) / wordColWidth;
+  var userDisplayCols = Math.max(totalDisplayCols - nSolutionCols, 1);
+  var newCenterPanelWidth = userDisplayCols * wordColWidth;
+  var newRightPanelLeft = centerPanelLeft + newCenterPanelWidth;
+  var newRightPanelWidth;
+  if (nSolutionCols > 0) {
+      newRightPanelWidth = Math.max(wordColWidth, window.innerWidth - newRightPanelLeft - 14);
+  } else {
+      newRightPanelWidth = 0;
+  }
         
+  centerPanel.style.width = newCenterPanelWidth + 'px';
   rightPanel.style.left = newRightPanelLeft + 'px';
-  wordPanels[1].style.width = newWidth + 'px';
+  rightPanel.style.width = newRightPanelWidth + 'px';
 
   for (var i = 0; i < wordPanels.length; i++) {
     wordPanels[i].style.height = newHeight + 'px';
@@ -728,8 +743,16 @@ function adjustWordPanelLayout(game) {
 
   console.log('innerHeight: ' + window.innerHeight + 
     ' innerWidth: ' + window.innerWidth +
+    ' wordPanelTop: ' + wordPanelTop +
+    ' newHeight: ' + newHeight +
     ' nUserCols: ' + nUserCols +
-    ' wordPanelTop: ' + wordPanelTop);
+    ' nSolutionCols: ' + nSolutionCols +
+    ' totalDisplayCols: ' + totalDisplayCols +
+    ' userDisplayCols: ' + userDisplayCols +
+    ' newCenterPanelWidth: ' + newCenterPanelWidth +
+    ' newRightPanelLeft: ' + newRightPanelLeft + 
+    ' newRightPanelWidth: ' + newRightPanelWidth
+    );
 }
 
 /* Test */
