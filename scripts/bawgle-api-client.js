@@ -36,7 +36,7 @@ function validateWords(answers, userWords) {
   var words = {};
 
   for (var i = 0; i < userWords.length; i++) {
-    var w = userWords[i].toLowerCase();
+    var w = userWords[i];
     if (w in answers) {
       words[w] = 1;
     } else {
@@ -611,7 +611,7 @@ var SolvingState = function(game) {
     game.userWords = [];
     for (var i = 0; i < wordEntries.length; i++) {
       if (wordEntries[i].value !== '') {
-        game.userWords.push(wordEntries[i].value);
+        game.userWords.push(wordEntries[i].value.toLowerCase());
       }
     }
 
