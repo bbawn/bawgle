@@ -378,7 +378,7 @@ var GameContext = function() {
     }
   };
 
-  this.generateLetters = this.generateLettersHist;
+  this.generateLetters = this.generateLettersCubes;
 
 };
 
