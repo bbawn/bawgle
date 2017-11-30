@@ -106,6 +106,10 @@ function makeGrid(rank, letters) {
 
   grid.id = 'grid';
   grid.className = 'noselect';
+  grid.addEventListener('touchstart', gridTouchStart, false);
+
+  /* touchenter is, apparently, not (yet) implemented */
+  grid.addEventListener('touchmove', gridTouchMove, false);
   for (var i = 0; i < rank; i++) {
     var row = document.createElement('tr');
 
@@ -122,24 +126,63 @@ function makeGrid(rank, letters) {
       cell.className = 'grid-cell';
       cell.id = 'c' + i + '-' + j;
       cellSpan.className = 'grid-content';
-      cellSpan.onmousedown = gridCellDown;
-      cellSpan.onmouseenter = gridCellEnter;
       cellSpan.textContent = displayLetter(letters[i * rank + j]);
+
+      /* XXX consider attaching mouse events to grid, consistent w/ touch */
+      cellEvents(cellSpan, true);
     }
   }
 
   return grid;
 }
 
+function gridTouchStart(ev) {
+  elt = document.elementFromPoint(ev.touches[0].pageX, ev.touches[0].pageY);
+  console.log('gridTouchStart t.target ' + ev.touches[0].target + 
+    ' pageX ' + ev.touches[0].pageX,
+    ' pageY ' + ev.touches[0].pageY,
+    ' parent ' + elt.parentNode.id);
+
+  ev.preventDefault();
+  if (elt.classList.contains('grid-content')) {
+    addUserWord();
+    resetWordSelection();
+    addGridCellLetter(elt.parentNode);
+  }
+}
+
+function gridTouchMove(ev) {
+  elt = document.elementFromPoint(ev.touches[0].pageX, ev.touches[0].pageY);
+  console.log('gridTouchMove t.target ' + ev.touches[0].target + 
+    ' pageX ' + ev.touches[0].pageX,
+    ' pageY ' + ev.touches[0].pageY,
+    ' parent ' + elt.parentNode.id);
+  ev.preventDefault();
+
+  /* Limit to event.touches.length() == 1 ? */
+  /* XXX are we guaranteed to get a touchmove for every elt touched? */
+  if (elt.classList.contains('grid-content') &&
+      (elt.parentNode.getAttribute('selected') !== '')) {
+    addGridCellLetter(elt.parentNode);
+  }
+}
+
+function cellEvents(elt, enabled) {
+  if (enabled) {
+    elt.onmousedown = gridCellDown;
+    elt.onmouseenter = gridCellEnter;
+  } else {
+    elt.onmousedown = null;
+    elt.onmouseenter = null;
+  }
+}
+
 /* XXX Hackish? consider Node property, e.g disabled */
 function setGridState(visible, enabled) {
   var gridContents = document.getElementsByClassName('grid-content');
-  var mouseDown = (enabled ? gridCellDown : null);
-  var mouseEnter = (enabled ? gridCellEnter : null);
 
   for (var i = 0; i < gridContents.length; i++) {
-    gridContents[i].onmousedown = mouseDown;
-    gridContents[i].onmouseenter = mouseEnter;
+    cellEvents(gridContents[i], enabled);
     if (!visible) {
       gridContents[i].classList.add('invisible');
     } else {
@@ -182,7 +225,7 @@ function addUserWord() {
     function(ev) { ul.removeChild(li); });
 
   // New li goes after top one, simulate insertAfter
-  ul.insertBefore(li, wordEntryTop.parentNode.nextSibling);
+  ul.insertBefore(li, wordEntryTop.parentNode.parentNode.nextSibling);
   wordEntryTop.value = '';
   wordEntryTop.focus();
 }
