@@ -74,7 +74,7 @@ function makeAnswerWordLi(word, count) {
   return li;
 }
 
-function makeWordEntryLi(word, inputId, buttonText, onButtonClick) {
+function makeWordEntryLi(word, inputId, buttonText, placeholder, onButtonClick) {
   var li = document.createElement('li');
   var divOuter = document.createElement('div');
   var divAddon = document.createElement('div');
@@ -84,6 +84,9 @@ function makeWordEntryLi(word, inputId, buttonText, onButtonClick) {
   input.type = 'text';
   input.className = 'form-control word-entry';
   input.id = inputId;
+  if (placeholder) {
+    input.placeholder = placeholder;
+  }
   divAddon.className = "word-item-addon input-group-addon";
   divAddon.textContent = buttonText;
   divAddon.onclick = onButtonClick;
@@ -106,10 +109,6 @@ function makeGrid(rank, letters) {
 
   grid.id = 'grid';
   grid.className = 'noselect';
-  grid.addEventListener('touchstart', gridTouchStart, false);
-
-  /* touchenter is, apparently, not (yet) implemented */
-  grid.addEventListener('touchmove', gridTouchMove, false);
   for (var i = 0; i < rank; i++) {
     var row = document.createElement('tr');
 
@@ -127,62 +126,74 @@ function makeGrid(rank, letters) {
       cell.id = 'c' + i + '-' + j;
       cellSpan.className = 'grid-content';
       cellSpan.textContent = displayLetter(letters[i * rank + j]);
-
-      /* XXX consider attaching mouse events to grid, consistent w/ touch */
-      cellEvents(cellSpan, true);
     }
   }
 
   return grid;
 }
 
-function gridTouchStart(ev) {
-  elt = document.elementFromPoint(ev.touches[0].pageX, ev.touches[0].pageY);
-  console.log('gridTouchStart t.target ' + ev.touches[0].target + 
-    ' pageX ' + ev.touches[0].pageX,
-    ' pageY ' + ev.touches[0].pageY,
-    ' parent ' + elt.parentNode.id);
+function touchStart(ev) {
+  var elt = document.elementFromPoint(ev.touches[0].clientX, ev.touches[0].clientY);
+  pointerStart(ev, elt);
+}
 
-  ev.preventDefault();
-  if (elt.classList.contains('grid-content')) {
+function mouseStart(ev) {
+  var elt = document.elementFromPoint(ev.clientX, ev.clientY);
+  pointerStart(ev, elt);
+}
+
+function pointerStart(ev, elt) {
+  if (! ev.ctrlKey) {
     addUserWord();
-    resetWordSelection();
+  }
+
+  var grid = document.getElementById('grid');
+  if (elt.classList.contains('grid-content') && 
+      (grid.getAttribute('enabled') === '')) {
+
+    /* Disable text selection */
+    ev.preventDefault();
     addGridCellLetter(elt.parentNode);
   }
 }
 
-function gridTouchMove(ev) {
-  elt = document.elementFromPoint(ev.touches[0].pageX, ev.touches[0].pageY);
-  console.log('gridTouchMove t.target ' + ev.touches[0].target + 
-    ' pageX ' + ev.touches[0].pageX,
-    ' pageY ' + ev.touches[0].pageY,
-    ' parent ' + elt.parentNode.id);
-  ev.preventDefault();
+function touchMove(ev) {
+  var elt = document.elementFromPoint(ev.touches[0].clientX, ev.touches[0].clientY);
+  var grid = document.getElementById('grid');
 
-  /* Limit to event.touches.length() == 1 ? */
-  /* XXX are we guaranteed to get a touchmove for every elt touched? */
-  if (elt.classList.contains('grid-content') &&
-      (elt.parentNode.getAttribute('selected') !== '')) {
+  if (elt.classList.contains('grid-content') && 
+      (grid.getAttribute('enabled') === '')) {
     addGridCellLetter(elt.parentNode);
   }
 }
 
-function cellEvents(elt, enabled) {
-  if (enabled) {
-    elt.onmousedown = gridCellDown;
-    elt.onmouseenter = gridCellEnter;
-  } else {
-    elt.onmousedown = null;
-    elt.onmouseenter = null;
+function mouseMove(ev) {
+  if (ev.buttons == 1) {
+
+    var elt = document.elementFromPoint(ev.clientX, ev.clientY);
+    var grid = document.getElementById('grid');
+    if (elt && elt.classList.contains('grid-content') && 
+        (grid.getAttribute('enabled') === '')) {
+
+      /* Disable text selection */
+      ev.preventDefault();
+      addGridCellLetter(elt.parentNode);
+    }
   }
 }
 
 /* XXX Hackish? consider Node property, e.g disabled */
 function setGridState(visible, enabled) {
   var gridContents = document.getElementsByClassName('grid-content');
+  var grid = document.getElementById('grid');
+
+  if (enabled) {
+    grid.setAttribute('enabled', '');
+  } else {
+    grid.removeAttribute('enabled');
+  }
 
   for (var i = 0; i < gridContents.length; i++) {
-    cellEvents(gridContents[i], enabled);
     if (!visible) {
       gridContents[i].classList.add('invisible');
     } else {
@@ -221,13 +232,14 @@ function addUserWord() {
     return;
   }
 
-  var li = makeWordEntryLi(wordEntryTop.value, '', '-',
+  var li = makeWordEntryLi(wordEntryTop.value, '', '-', null,
     function(ev) { ul.removeChild(li); });
 
   // New li goes after top one, simulate insertAfter
   ul.insertBefore(li, wordEntryTop.parentNode.parentNode.nextSibling);
   wordEntryTop.value = '';
   wordEntryTop.focus();
+  resetWordSelection();
 }
 
 function resetWordSelection() {
@@ -240,27 +252,9 @@ function resetWordSelection() {
 
 function addGridCellLetter(gridCell) {
   var wordEntryTop = document.getElementById('word-entry-top');
-  if (wordEntryTop) {
+  if (wordEntryTop && (gridCell.getAttribute('selected') !== '')) {
     wordEntryTop.value += gridCell.textContent.toLowerCase();
     gridCell.setAttribute('selected', '');
-  }
-}
-
-function gridCellDown(ev) {
-  if (! ev.ctrlKey) {
-    addUserWord();
-    resetWordSelection();
-  }
-
-  if (! ev.target.parentNode.getAttribute('selected')) {
-    addGridCellLetter(ev.target.parentNode);
-  }
-}
-
-function gridCellEnter(ev) {
-  if ((ev.buttons === 1) &&
-      (ev.target.parentNode.getAttribute('selected') !== '')) {
-    addGridCellLetter(ev.target.parentNode);
   }
 }
 
@@ -588,7 +582,7 @@ var StartState = function(game) {
     yourWordsLabel.textContent = 'Your words:';
     removeAllChildren(userWordList);
 
-    var li = makeWordEntryLi('', 'word-entry-top', '+', addUserWord);
+    var li = makeWordEntryLi('', 'word-entry-top', '+', 'Enter word', addUserWord);
     userWordList.appendChild(li);
     var wordEntryInput = document.getElementById('word-entry-top');
     wordEntryInput.disabled = true;
@@ -761,6 +755,13 @@ function initialize() {
     location.assign('help.html');
     /* window.open('help.html'); */
   };
+
+  document.addEventListener('touchstart', touchStart, false);
+  document.addEventListener('mousedown', mouseStart, false);
+
+  /* touchenter is, apparently, not (yet) implemented */
+  document.addEventListener('touchmove', touchMove, false);
+  document.addEventListener('mousemove', mouseMove, false);
 
   game.start();
 }
