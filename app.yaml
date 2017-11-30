@@ -27,5 +27,5 @@ libraries:
 skip_files:
 - util/
 - dict/
-- tmp/
+- work/
 - .git/

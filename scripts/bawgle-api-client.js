@@ -10,14 +10,6 @@ function removeAllChildren(node) {
   }
 }
 
-function calcAbsoluteTop(element) {
-  var top = 0;
-  for (var e = element; e; e = e.parentElement) {
-    top += e.offsetTop;
-  }
-  return top;
-}
-
 /* Return random permutation of array using Fisher-Yates */
 function shuffleArray(array) {
   for (var i = array.length - 1; i > 0; i--) {
@@ -29,8 +21,8 @@ function shuffleArray(array) {
   return array;
 }
 
-/* Return map for of given array of user words. Element value is 0 if the word
- * is not in the given answer object, otherwise 1.
+/* Return validity map for given array of user words. Element value is 0 if 
+ * the word is not in the given answer object, otherwise 1.
  */
 function validateWords(answers, userWords) {
   var words = {};
@@ -66,6 +58,7 @@ function makeWordAnchor(word, crossOut) {
 function makeUserWordLi(word, valid) {
   var li = document.createElement('li');
 
+  li.className = 'word-item list-group-item';
   li.appendChild(makeWordAnchor(word, !valid));
 
   return li;
@@ -73,31 +66,33 @@ function makeUserWordLi(word, valid) {
 
 function makeAnswerWordLi(word, count) {
   var li = document.createElement('li');
-
   var displayWord = (count > 1 ? word + '(' + count + ')' : word);
+
+  li.className = 'word-item list-group-item';
   li.appendChild(makeWordAnchor(displayWord, false));
 
   return li;
 }
 
-function makeWordEntryLi(word, inputId, buttonIcon, onButtonClick) {
+function makeWordEntryLi(word, inputId, buttonText, onButtonClick) {
   var li = document.createElement('li');
+  var divOuter = document.createElement('div');
+  var divAddon = document.createElement('div');
   var input = document.createElement('input');
-  var button = document.createElement('button');
-  var buttonSpan = document.createElement('span');
 
   input.value = word;
   input.type = 'text';
-  input.className = 'word-entry';
+  input.className = 'form-control word-entry';
   input.id = inputId;
-  button.className = 'word-entry-button';
-  button.onclick = onButtonClick;
-  buttonSpan.className ='material-icons md-18';
-  buttonSpan.textContent = buttonIcon;
+  divAddon.className = "word-item-addon input-group-addon";
+  divAddon.textContent = buttonText;
+  divAddon.onclick = onButtonClick;
+  divOuter.className = "input-group mb-2 mb-sm-0";
+  li.className = "word-item list-group-item";
 
-  button.appendChild(buttonSpan);
-  li.appendChild(input);
-  li.appendChild(button);
+  divOuter.appendChild(divAddon);
+  divOuter.appendChild(input);
+  li.appendChild(divOuter);
 
   return li;
 }
@@ -107,26 +102,25 @@ function displayLetter(letter) {
 }
 
 function makeGrid(rank, letters) {
-  var grid = document.createElement('div');
+  var grid = document.createElement('table');
 
   grid.id = 'grid';
   grid.className = 'noselect';
-
   for (var i = 0; i < rank; i++) {
-    var row = document.createElement('div');
+    var row = document.createElement('tr');
 
     row.id = 'r' + i;
     row.className = 'grid-row';
     grid.appendChild(row);
     for (var j = 0; j < rank; j++) {
-      var cellDiv = document.createElement('div');
+      var cell = document.createElement('td');
       var cellSpan = document.createElement('span');
 
-      cellDiv.appendChild(cellSpan);
-      row.appendChild(cellDiv);
+      cell.appendChild(cellSpan);
+      row.appendChild(cell);
 
-      cellDiv.className = 'grid-cell';
-      cellDiv.id = 'c' + i + '-' + j;
+      cell.className = 'grid-cell';
+      cell.id = 'c' + i + '-' + j;
       cellSpan.className = 'grid-content';
       cellSpan.onmousedown = gridCellDown;
       cellSpan.onmouseenter = gridCellEnter;
@@ -184,7 +178,7 @@ function addUserWord() {
     return;
   }
 
-  var li = makeWordEntryLi(wordEntryTop.value, '', 'remove_circle',
+  var li = makeWordEntryLi(wordEntryTop.value, '', '-',
     function(ev) { ul.removeChild(li); });
 
   // New li goes after top one, simulate insertAfter
@@ -538,7 +532,7 @@ var StartState = function(game) {
     playingButton.onclick = function() {
       game.changeState(new PlayingState(game));
     };
-    document.getElementById('playing-icon').innerHTML = 'play_arrow';
+    playingButton.innerHTML = 'Play';
     solveButton.disabled = false;
     setClockDisplay(game.clock.durationMs);
     game.generateLetters();
@@ -551,7 +545,7 @@ var StartState = function(game) {
     yourWordsLabel.textContent = 'Your words:';
     removeAllChildren(userWordList);
 
-    var li = makeWordEntryLi('', 'word-entry-top', 'add_circle', addUserWord);
+    var li = makeWordEntryLi('', 'word-entry-top', '+', addUserWord);
     userWordList.appendChild(li);
     var wordEntryInput = document.getElementById('word-entry-top');
     wordEntryInput.disabled = true;
@@ -559,7 +553,6 @@ var StartState = function(game) {
 
     solutionLabel.innerHTML = '';
     removeAllChildren(solutionWordList);
-    adjustWordPanelLayout(game)
   };
 };
 
@@ -573,10 +566,10 @@ var PlayingState = function(game) {
     playingButton.onclick = function() {
       game.changeState(new PausedState(game));
     };
+    playingButton.innerHTML = 'Pause';
     wordEntry.disabled = false;
     wordEntry.focus();
 
-    document.getElementById('playing-icon').innerHTML = 'pause';
     setGridState(true, true);
   };
 };
@@ -590,9 +583,9 @@ var PausedState = function(game) {
     playingButton.onclick = function() {
       game.changeState(new PlayingState(game));
     };
+    playingButton.innerHTML = 'Play';
     document.getElementById('word-entry-top').disabled = true;
     document.getElementById('grid').disabled = true;
-    document.getElementById('playing-icon').innerHTML = 'play_arrow';
     setGridState(false, false);
   };
 };
@@ -654,7 +647,7 @@ var SolvedState = function(game) {
     var statusHeader = document.getElementById('status');
 
     // Header
-    document.getElementById('playing-icon').innerHTML = 'play_arrow';
+    playingButton.innerHTML = 'Play';
     setGridState(true, false);
     playingButton.disabled = true;
     solveButton.disabled = true;
@@ -687,73 +680,9 @@ var SolvedState = function(game) {
                                 game.solutionWords[sortedWords[i]]);
       answerWordList.appendChild(li);
     }
-    adjustWordPanelLayout(game)
   };
 };
 
-/* Word lists dynamically extend to bottom and left of window view port */
-
-function adjustWordPanelLayout(game) {
-  var wordPanels = document.getElementsByClassName('word-panel');
-  var wordPanelTop = calcAbsoluteTop(wordPanels[0]);
-  var grid = document.getElementById('grid');
-  var centerPanel = document.getElementById('center-panel');
-  var rightPanel = document.getElementById('right-panel');
-  var wordHeight = 18;
-  
-  // 2 px adjustment needed because sometimes vert scrollbar appears
-  // when it shouldn't (XXX only on Firefox?)
-  var newHeight = Math.floor((window.innerHeight - wordPanelTop) / wordHeight)
-                    * wordHeight;
-
-  // If there is a grid, don't set panel view port to height smaller than 
-  // grid (avoid multiple sbs)
-  if (grid) {
-
-    // XXX for some reason grid.offsetHeight omits last row. Some arcane
-    // aspect of grid-cell float layout. Hackaround it. What a mess. I 
-    // don't understand layouts very well...
-    var gridHeight = grid.offsetHeight * game.rank / (game.rank - 1);
-    newHeight = Math.max(gridHeight, newHeight);
-  }
-
-  // TODO: calc this based on current element positions, sizes, fonts, etc
-  var nUserCols = Math.max(1, Math.ceil(game.userWords.length * wordHeight / newHeight));
-  var nSolutionCols = Math.ceil(Object.keys(game.solutionWords).length * wordHeight / newHeight);
-  var wordColWidth = 14 * 14;
-  var centerPanelLeft = 36 * 14;
-  var totalDisplayCols = (window.innerWidth - centerPanelLeft) / wordColWidth;
-  var userDisplayCols = Math.max(totalDisplayCols - nSolutionCols, 1);
-  var newCenterPanelWidth = userDisplayCols * wordColWidth;
-  var newRightPanelLeft = centerPanelLeft + newCenterPanelWidth;
-  var newRightPanelWidth;
-  if (nSolutionCols > 0) {
-      newRightPanelWidth = Math.max(wordColWidth, window.innerWidth - newRightPanelLeft - 14);
-  } else {
-      newRightPanelWidth = 0;
-  }
-        
-  centerPanel.style.width = newCenterPanelWidth + 'px';
-  rightPanel.style.left = newRightPanelLeft + 'px';
-  rightPanel.style.width = newRightPanelWidth + 'px';
-
-  for (var i = 0; i < wordPanels.length; i++) {
-    wordPanels[i].style.height = newHeight + 'px';
-  }
-
-  console.log('innerHeight: ' + window.innerHeight + 
-    ' innerWidth: ' + window.innerWidth +
-    ' wordPanelTop: ' + wordPanelTop +
-    ' newHeight: ' + newHeight +
-    ' nUserCols: ' + nUserCols +
-    ' nSolutionCols: ' + nSolutionCols +
-    ' totalDisplayCols: ' + totalDisplayCols +
-    ' userDisplayCols: ' + userDisplayCols +
-    ' newCenterPanelWidth: ' + newCenterPanelWidth +
-    ' newRightPanelLeft: ' + newRightPanelLeft + 
-    ' newRightPanelWidth: ' + newRightPanelWidth
-    );
-}
 
 /* Test */
 function testDisplayUserWord(nwords, nchar) {
@@ -772,11 +701,12 @@ function testDisplayAnswerWord(nwords, nchar) {
 }
 
 
+var game;
 function initialize() {
   var newButton = document.getElementById('new');
   var solveButton = document.getElementById('solve');
   var helpButton = document.getElementById('help');
-  var game = new GameContext();
+  game = new GameContext();
 
   newButton.onclick = function() {
     game.changeState(new StartState(game));
@@ -790,11 +720,6 @@ function initialize() {
   };
 
   game.start();
-
-  window.onresize = function() {
-    adjustWordPanelLayout(game);
-  };
-  adjustWordPanelLayout(game);
 }
 
 document.addEventListener('DOMContentLoaded', function(event) {
