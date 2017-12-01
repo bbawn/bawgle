@@ -103,6 +103,10 @@
   overflow: auto;
 }
 
+.word-list a {
+  text-decoration: underline;
+}
+
 .bawgle-help {
   margin: 2em;
 }

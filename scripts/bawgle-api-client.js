@@ -43,6 +43,8 @@ function makeWordAnchor(word, crossOut) {
   var wordAnchorBase = 'http://wiktionary.org/wiki/';
   var a = document.createElement('a');
   a.href = wordAnchorBase + word;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
 
   if (crossOut) {
     var del = document.createElement('del');
