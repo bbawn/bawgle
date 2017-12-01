@@ -89,11 +89,11 @@ function makeWordEntryLi(word, inputId, buttonText, placeholder, onButtonClick) 
   if (placeholder) {
     input.placeholder = placeholder;
   }
-  divAddon.className = "word-item-addon input-group-addon";
+  divAddon.className = "word-entry-addon input-group-addon";
   divAddon.textContent = buttonText;
   divAddon.onclick = onButtonClick;
   divOuter.className = "input-group mb-2 mb-sm-0";
-  li.className = "word-item list-group-item";
+  li.className = "word-entry-item list-group-item";
 
   divOuter.appendChild(divAddon);
   divOuter.appendChild(input);
@@ -119,15 +119,15 @@ function makeGrid(rank, letters) {
     grid.appendChild(row);
     for (var j = 0; j < rank; j++) {
       var cell = document.createElement('td');
-      var cellSpan = document.createElement('span');
+      var cellDiv = document.createElement('div');
 
-      cell.appendChild(cellSpan);
+      cell.appendChild(cellDiv);
       row.appendChild(cell);
 
       cell.className = 'grid-cell';
       cell.id = 'c' + i + '-' + j;
-      cellSpan.className = 'grid-content';
-      cellSpan.textContent = displayLetter(letters[i * rank + j]);
+      cellDiv.className = 'grid-content';
+      cellDiv.textContent = displayLetter(letters[i * rank + j]);
     }
   }
 
@@ -176,7 +176,9 @@ function touchMove(ev) {
      */
     ev.preventDefault();
   }
-  if (elt.classList.contains('grid-content') && 
+
+  /* Empirically, elt can be null, not sure how... */
+  if (elt && elt.classList.contains('grid-content') && 
       (grid.getAttribute('enabled') === '')) {
     addGridCellLetter(elt.parentNode);
   }
@@ -238,6 +240,12 @@ function wordEntryKeypress(event) {
   }
 }
 
+function startKeypress(event) {
+  if (event.keyCode == 13) {
+    game.changeState(new PlayingState(game));
+  }
+}
+
 /* Test */
 function testAddUserWord(nwords, nchar) {
   var wordEntryTop = document.getElementById('word-entry-top');
@@ -261,8 +269,12 @@ function addUserWord() {
   // New li goes after top one, simulate insertAfter
   ul.insertBefore(li, wordEntryTop.parentNode.parentNode.nextSibling);
   wordEntryTop.value = '';
-  wordEntryTop.focus();
   resetWordSelection();
+}
+
+function wordEntryButtonClick() {
+  addUserWord();
+  wordEntryTop.focus();
 }
 
 function resetWordSelection() {
@@ -598,6 +610,8 @@ var StartState = function(game) {
     startButton.onclick = function() {
       game.changeState(new PlayingState(game));
     };
+    startButton.onkeypress = startKeypress;
+    startButton.focus();
     playingButton.innerHTML = 'Play';
     solveButton.disabled = false;
     setClockDisplay(game.clock.durationMs);
@@ -611,7 +625,8 @@ var StartState = function(game) {
     yourWordsLabel.textContent = 'Your words:';
     removeAllChildren(userWordList);
 
-    var li = makeWordEntryLi('', 'word-entry-top', '+', 'Enter word', addUserWord);
+    var li = makeWordEntryLi('', 'word-entry-top', '+', 'Enter word', 
+        wordEntryButtonClick);
     userWordList.appendChild(li);
     var wordEntryInput = document.getElementById('word-entry-top');
     wordEntryInput.disabled = true;
