@@ -145,16 +145,21 @@ function mouseStart(ev) {
 }
 
 function pointerStart(ev, elt) {
+  var grid = document.getElementById('grid');
+  if (grid.contains(elt)) {
+
+    /* Disable text selection, touch scrolling. Careful, we need
+     * to do this anywhere in grid, not just in grid-content
+     * hotspots.
+     */
+    ev.preventDefault();
+  }
   if (! ev.ctrlKey) {
     addUserWord();
   }
 
-  var grid = document.getElementById('grid');
   if (elt.classList.contains('grid-content') && 
       (grid.getAttribute('enabled') === '')) {
-
-    /* Disable text selection */
-    ev.preventDefault();
     addGridCellLetter(elt.parentNode);
   }
 }
@@ -163,18 +168,33 @@ function touchMove(ev) {
   var elt = document.elementFromPoint(ev.touches[0].clientX, ev.touches[0].clientY);
   var grid = document.getElementById('grid');
 
+  if (grid.contains(elt)) {
+
+    /* Disable text selection, touch scrolling. Careful, we need
+     * to do this anywhere in grid, not just in grid-content
+     * hotspots.
+     */
+    ev.preventDefault();
+  }
   if (elt.classList.contains('grid-content') && 
       (grid.getAttribute('enabled') === '')) {
-    ev.preventDefault();
     addGridCellLetter(elt.parentNode);
   }
 }
 
 function mouseMove(ev) {
   if (ev.buttons == 1) {
-
     var elt = document.elementFromPoint(ev.clientX, ev.clientY);
     var grid = document.getElementById('grid');
+
+    if (grid.contains(elt)) {
+
+      /* Disable text selection, touch scrolling. Careful, we need
+       * to do this anywhere in grid, not just in grid-content
+       * hotspots.
+       */
+      ev.preventDefault();
+    }
     if (elt && elt.classList.contains('grid-content') && 
         (grid.getAttribute('enabled') === '')) {
 
@@ -773,12 +793,12 @@ function initialize() {
     /* window.open('help.html'); */
   };
 
-  document.addEventListener('touchstart', touchStart, false);
-  document.addEventListener('mousedown', mouseStart, false);
+  document.addEventListener('touchstart', touchStart, {passive: false});
+  document.addEventListener('mousedown', mouseStart, {passive: false});
 
   /* touchenter is, apparently, not (yet) implemented */
-  document.addEventListener('touchmove', touchMove, false);
-  document.addEventListener('mousemove', mouseMove, false);
+  document.addEventListener('touchmove', touchMove, {passive: false});
+  document.addEventListener('mousemove', mouseMove, {passive: false});
 
   game.start();
 }
