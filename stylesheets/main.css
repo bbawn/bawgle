@@ -92,12 +92,6 @@
 #user-entry-list {
   display: none;  
 }
-#user-word-list {
-/*  display: none;*/
-}
-#right-panel {
-/*  display: none; */
-}
 
 .word-list {
   overflow: auto;
@@ -125,4 +119,46 @@
                                   supported by Chrome and Opera */
 }
 
+
+.modalbox .box {
+  background-color: rgba(0,14,28,0.6);
+  margin: 110px auto;
+  padding: 40px;
+  max-width: max-content;
+  border-radius: 30px;
+}
+
+@media (max-height: 480px) {
+  .modalbox .box {
+    margin: 10px auto;
+  }
+}
+
+.big-button {
+  margin: 0;
+  padding: 0 0 10px;
+  color: #fff;
+  background: transparent; 
+}
+
+.big-button-label {
+  font-size: 14px;
+  color: #fff;
+  background: transparent;
+}
+
+.big-button-span {
+  font-size: 182px;
+}
+
+.modalbox {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  color:#333333;
+}
 

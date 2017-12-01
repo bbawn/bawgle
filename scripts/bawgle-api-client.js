@@ -165,6 +165,7 @@ function touchMove(ev) {
 
   if (elt.classList.contains('grid-content') && 
       (grid.getAttribute('enabled') === '')) {
+    ev.preventDefault();
     addGridCellLetter(elt.parentNode);
   }
 }
@@ -371,12 +372,15 @@ var GameContext = function() {
 
     shuffleArray(indexes);
     for (var i = 0; i < indexes.length; i++) {
-      var letter = cubes[i][Math.floor(Math.random() * (cubes[i].length))];
+      j = indexes[i];
+      assert(j >= 0 && j < cubes.length);
+      var letter = cubes[j][Math.floor(Math.random() * (cubes[j].length))];
       if (letter == 'q') {
         letter = 'qu';
       }
       this.letters.push(letter);
     }
+    console.log('indexes: ' + indexes + ' letters: ' + this.letters);
   };
 
   /* Generate a new letter sequence using a random letter selection
@@ -556,19 +560,22 @@ var StartState = function(game) {
   this.go = function() {
     var gridPanelDiv = document.getElementById('left-panel');
     var playingButton = document.getElementById('playing');
+    var startButton = document.getElementById('start-button');
     var solveButton = document.getElementById('solve');
     var yourWordsLabel = document.getElementById('your-words-label');
     var userWordList = document.getElementById('user-word-list');
     var grid = document.getElementById('grid');
     var solutionLabel = document.getElementById('solution-label');
     var solutionWordList = document.getElementById('solution-word-list');
+    var rightPanel = document.getElementById('right-panel');
+    var startModal = document.getElementById('start-modal');
 
     game.userWords = [];
     game.userWords = {};
     game.userScore = undefined;
     game.solutionScore = undefined;
     game.clock.cancel();
-    playingButton.onclick = function() {
+    startButton.onclick = function() {
       game.changeState(new PlayingState(game));
     };
     playingButton.innerHTML = 'Play';
@@ -579,7 +586,7 @@ var StartState = function(game) {
       gridPanelDiv.removeChild(grid);
     }
     gridPanelDiv.appendChild(makeGrid(game.rank, game.letters));
-    setGridState(true, false);
+    setGridState(false, false);
     playingButton.disabled = false;
     yourWordsLabel.textContent = 'Your words:';
     removeAllChildren(userWordList);
@@ -592,6 +599,8 @@ var StartState = function(game) {
 
     solutionLabel.innerHTML = '';
     removeAllChildren(solutionWordList);
+    rightPanel.style.display = 'none';
+    startModal.style.display = 'block';
   };
 };
 
@@ -601,6 +610,8 @@ var PlayingState = function(game) {
   this.go = function() {
     var playingButton = document.getElementById('playing');
     var wordEntry = document.getElementById('word-entry-top');
+    var startModal = document.getElementById('start-modal');
+
     game.clock.run();
     playingButton.onclick = function() {
       game.changeState(new PausedState(game));
@@ -610,6 +621,7 @@ var PlayingState = function(game) {
     wordEntry.focus();
 
     setGridState(true, true);
+    startModal.style.display = 'none';
   };
 };
 
@@ -684,6 +696,7 @@ var SolvedState = function(game) {
     var yourWordsLabel = document.getElementById('your-words-label');
     var userWordList = document.getElementById('user-word-list');
     var statusHeader = document.getElementById('status');
+    var rightPanel = document.getElementById('right-panel');
 
     // Header
     playingButton.innerHTML = 'Play';
@@ -719,6 +732,8 @@ var SolvedState = function(game) {
                                 game.solutionWords[sortedWords[i]]);
       answerWordList.appendChild(li);
     }
+
+    rightPanel.style.display = '';
   };
 };
 
