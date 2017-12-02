@@ -127,12 +127,11 @@
                                   supported by Chrome and Opera */
 }
 
-
 .modalbox .box {
   background-color: rgba(0,14,28,0.6);
   margin: 110px auto;
   padding: 40px;
-  /* max-width: max-content; works on chrome, not FF */
+  /* max-width: max-content; seems to work on chrome, not FF */
   max-width: 267px;
   border-radius: 30px;
 }
