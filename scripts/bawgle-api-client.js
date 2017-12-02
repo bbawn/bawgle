@@ -611,7 +611,14 @@ var StartState = function(game) {
       game.changeState(new PlayingState(game));
     };
     startButton.onkeypress = startKeypress;
-    startButton.focus();
+
+    /* Helpful to start with focus in word entry for keyboard entry
+     * but it's super annoying on phones - pops up the keyboard when
+     * user probably should use touch entry
+     */
+    if (isTouchDevice()) {
+      startButton.focus();
+    }
     playingButton.innerHTML = 'Play';
     solveButton.disabled = false;
     setClockDisplay(game.clock.durationMs);
@@ -794,6 +801,10 @@ function toggleFullScreen() {
   }  
 }
 
+function isTouchDevice() {
+  return 'ontouchstart' in document.documentElement;
+}
+
 /* Test */
 function testDisplayUserWord(nwords, nchar) {
   var userWordList = document.getElementById('user-word-list');
@@ -826,10 +837,14 @@ function initialize() {
     game.changeState(new SolvingState(game));
   };
   helpButton.onclick = function() {
-    location.assign('help.html');
-    /* window.open('help.html'); */
+    /* location.assign('help.html'); */
+    window.open('help.html', '_blank');
   };
+
+  /* XXX fullscreen button seems broken: flashed fullscreen and then 
+   * reloads page.
   fullScreenButton.onclick = toggleFullScreen;
+  */
 
   document.addEventListener('touchstart', touchStart, {passive: false});
   document.addEventListener('mousedown', mouseStart, {passive: false});

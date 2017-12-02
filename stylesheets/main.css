@@ -132,7 +132,8 @@
   background-color: rgba(0,14,28,0.6);
   margin: 110px auto;
   padding: 40px;
-  max-width: max-content;
+  /* max-width: max-content; works on chrome, not FF */
+  max-width: 267;
   border-radius: 30px;
 }
 
