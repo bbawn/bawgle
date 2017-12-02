@@ -772,6 +772,20 @@ var SolvedState = function(game) {
   };
 };
 
+function toggleFullScreen() {
+  var doc = window.document;
+  var docEl = doc.documentElement;
+
+  var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+  var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+  if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+    requestFullScreen.call(docEl);
+  }
+  else {
+    cancelFullScreen.call(doc);
+  }
+}
 
 /* Test */
 function testDisplayUserWord(nwords, nchar) {
@@ -795,6 +809,7 @@ function initialize() {
   var newButton = document.getElementById('new');
   var solveButton = document.getElementById('solve');
   var helpButton = document.getElementById('help');
+  var fullScreenButton = document.getElementById('full-screen');
   game = new GameContext();
 
   newButton.onclick = function() {
@@ -807,6 +822,7 @@ function initialize() {
     location.assign('help.html');
     /* window.open('help.html'); */
   };
+  fullScreenButton.onclick = toggleFullScreen;
 
   document.addEventListener('touchstart', touchStart, {passive: false});
   document.addEventListener('mousedown', mouseStart, {passive: false});
