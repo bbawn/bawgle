@@ -1,6 +1,7 @@
 ## Description
 
 A learning exercise from long ago.
+
 Bawgle: word search game based on popular fave. https://bawgle-game.appspot.com
 
 Web frontend uses Google App Engine. 
