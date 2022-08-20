@@ -1,6 +1,6 @@
 ## Description
 
-A learning exercise from long ago.
+A learning exercise from long ago. An example of trie (prefix tree) data structure.
 
 Bawgle: word search game based on popular fave. https://bawgle-game.appspot.com
 
